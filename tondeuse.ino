@@ -228,69 +228,8 @@ void setup()
 
 void loop()
 {
-  // Case 1: Left sensor and right sensors are reading white and middle sensor is reading black. Drive forward!
-
-  if (analogRead(lsensor) < whitelevl && analogRead(msensor) > blacklevl && analogRead(rsensor) < whitelevl)
-  {
-    goforward();
-  }
-
-  // Case 2 : Left sensor and middle sensor are reading white and right sensor is reading black. Turn right!
-
-  else if (analogRead(lsensor) < whitelevl && analogRead(msensor) < whitelevl && analogRead(rsensor) > blacklevl)
-  {
-    while (true)
-    {
-      turnright();
-      if ((analogRead(lsensor) < whitelevl && analogRead(msensor) > blacklevl && analogRead(rsensor) < whitelevl) || (analogRead(lsensor) > blacklevl && analogRead(msensor) > blacklevl && analogRead(rsensor) < whitelevl))
-      {
-        break;
-      } // Break if Left sensor and right sensor are reading white and middle sensor is reading black
-    }
-  }
-
-  // Case 3 : Left sensor is reading white, middle sensor and right sensor are reading black. Turn right!
-
-  else if (analogRead(lsensor) < whitelevl && analogRead(msensor) > blacklevl && analogRead(rsensor) > blacklevl)
-  {
-    while (true)
-    {
-      turnright();
-      if ((analogRead(lsensor) < whitelevl && analogRead(msensor) > blacklevl && analogRead(rsensor) < whitelevl) || (analogRead(lsensor) > blacklevl && analogRead(msensor) > blacklevl && analogRead(rsensor) < whitelevl))
-      {
-        break;
-      } // Break if Left sensor and right sensor are reading white and middle sensor is reading black
-    }
-  }
-
-  // Case 4 :  Left sensor is reading black, middle sensor and right sensor are reading white. Turn left!
-  else if (analogRead(lsensor) > blacklevl && analogRead(msensor) < whitelevl && analogRead(rsensor) < whitelevl)
-  {
-    while (true)
-    {
-      turnleft();
-      if ((analogRead(lsensor) < whitelevl && analogRead(msensor) > blacklevl && analogRead(rsensor) < whitelevl) || (analogRead(lsensor) < whitelevl && analogRead(msensor) > blacklevl && analogRead(rsensor) > blacklevl))
-      {
-        break;
-      } // Break if Left sensor and right sensor are reading white and middle sensor is reading black
-    }
-  }
-
-  // Case 5 : Left sensor and middle sensor are reading black and right sensor is reading white. Turn left!
-  else if (analogRead(lsensor) > blacklevl && analogRead(msensor) > blacklevl && analogRead(rsensor) < whitelevl)
-  {
-    while (true)
-    {
-      turnleft();
-      if ((analogRead(lsensor) < whitelevl && analogRead(msensor) > blacklevl && analogRead(rsensor) < whitelevl) || (analogRead(lsensor) < whitelevl && analogRead(msensor) > blacklevl && analogRead(rsensor) > blacklevl))
-      {
-        break;
-      } // Break if Left sensor and right sensor are reading white and middle sensor is reading black
-    }
-  }
-  else
-  {
-    goforward(); // If there is no line, the rover will go forward
-  }
-  //////////////////// Read Sensor Routine //////////
+  checkBattery();
+  checkBumper();
+  checkSonar();
+  
 }
