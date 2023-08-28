@@ -29,8 +29,10 @@ const int MOW_MOTOR_PIN = 40;
 
 // Battery
 const int BATTERY_PIN = A13;
-const float TensionMin = 11.2;
-const float TensionMax = 14.4;
+const float BATTERY_MIN_VOLTAGE = 11.2;
+const float BATTERY_MIN_VALUE = (1023 * BATTERY_MIN_VOLTAGE) / 5;
+const float BATTERY_MAX_VOLTAGE = 14.4;
+const float BATTERY_MAX_VALUE = (1023 * BATTERY_MAX_VOLTAGE) / 5;
 // TODO: Pas compris
 // int getBATTERIE = (INPUT);
 
@@ -68,9 +70,16 @@ long cm1, cm2, cm3;
 /*
 getDistance. Get the distance from a Sonar sensor
 */
-float getDistance(int sonarPin)
+void getBattery()
 {
-  return 1.0;
+  float result = ((analogRead(BATTERY_PIN) - BATTERY_MIN_VALUE) / (BATTERY_MAX_VALUE - BATTERY_MIN_VALUE)) * 100;
+
+  if (result > 100)
+    result = 100;
+  else if (result < 0)
+    result = 0;
+
+  return result;
 }
 
 void setup()
