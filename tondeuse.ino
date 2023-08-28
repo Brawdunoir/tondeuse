@@ -70,6 +70,7 @@ long sonarCenterDist, sonarLeftDist, sonarRightDist;
 
 // Next Time ------------------------------------
 unsigned int nextTimeSonar = 0;
+unsigned int nextTimeBattery = 0;
 
 // Functions --------
 /*
@@ -121,16 +122,26 @@ void checkSonar()
 /*
 getDistance. Get the distance from a Sonar sensor
 */
-void getBattery()
+void checkBattery()
 {
-  float result = ((analogRead(BATTERY_PIN) - BATTERY_MIN_VALUE) / (BATTERY_MAX_VALUE - BATTERY_MIN_VALUE)) * 100;
+  if (millis() >= nextTimeBattery)
+  {
+    nextTimeBattery = millis() + 60000;
 
-  if (result > 100)
-    result = 100;
-  else if (result < 0)
-    result = 0;
+    float result = ((analogRead(BATTERY_PIN) - BATTERY_MIN_VALUE) / (BATTERY_MAX_VALUE - BATTERY_MIN_VALUE)) * 100;
 
-  return result;
+    if (result > 100)
+      result = 100;
+    else if (result < 0)
+      result = 0;
+
+    batteryLevel = result;
+    if (DEBUG)
+    {
+      Serial.print("Battery Level: ");
+      Serial.println(batteryLevel);
+    }
+  }
 }
 
 void setup()
