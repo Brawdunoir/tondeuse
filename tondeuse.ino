@@ -1,7 +1,9 @@
 #include <DualVNH5019MotorShield.h>
+#include "Ultrasonic.h"
 
 // Constants --------
 const float MAX_SPEED = 400;
+const float SONAR_TIMEOUT = 20000UL; // 20ms to get approx 3.4m of range
 const bool DEBUG = true;
 // ------------------
 
@@ -9,14 +11,17 @@ const bool DEBUG = true;
 // JSN-SR04 Central
 const int SONAR_CENTER_TRIG_PIN = 50;
 const int SONAR_CENTER_ECHO_PIN = 48;
+Ultrasonic sonarCenter(SONAR_CENTER_TRIG_PIN, SONAR_CENTER_ECHO_PIN, SONAR_TIMEOUT);
 
 // HC-SR04 Left
 const int SONAR_LEFT_TRIG_PIN = 30;
 const int SONAR_LEFT_ECHO_PIN = 32;
+Ultrasonic sonarLeft(SONAR_LEFT_TRIG_PIN, SONAR_LEFT_ECHO_PIN, SONAR_TIMEOUT);
 
 // HC-SR04 Right
 const int SONAR_RIGHT_TRIG_PIN = 26;
 const int SONAR_RIGHT_ECHO_PIN = 28;
+Ultrasonic sonarRight(SONAR_RIGHT_TRIG_PIN, SONAR_RIGHT_ECHO_PIN, SONAR_TIMEOUT);
 
 // Bumper
 const int BUMPER_PIN = 34;
@@ -60,12 +65,58 @@ int ledpinBatterie = 3; // TODO Kesque Se ?
 // Variables
 float speed = 0;
 float PasAccel = 10; // TODO: Voir pour l'enlever avec meilleure méthode accélération (ardumower)
-int etatInter1 = 1;  // bumper
-// création de l´objet pour contrôler le calcul de distance
-long lecture_echo1, lecture_echo2, lecture_echo3;
-long cm1, cm2, cm3;
+// Sonar
+long sonarCenterDist, sonarLeftDist, sonarRightDist;
+
+// Next Time ------------------------------------
+unsigned int nextTimeSonar = 0;
 
 // Functions --------
+/*
+checkSonar will update the current ultrasonic sensor to check
+*/
+void checkSonar()
+{
+  if (millis() >= nextTimeSonar)
+  {
+    static short senSonarTurn = 0;
+    nextTimeSonar = millis() + 250;
+
+    switch (senSonarTurn)
+    {
+    case 0:
+      sonarCenterDist = sonarCenter.read();
+      senSonarTurn++;
+      if (DEBUG)
+      {
+        Serial.print("Sonar Center Distance: ");
+        Serial.println(sonarCenterDist);
+      }
+      break;
+    case 1:
+      sonarLeftDist = sonarLeft.read();
+      senSonarTurn++;
+      if (DEBUG)
+      {
+        Serial.print("Sonar Left Distance: ");
+        Serial.println(sonarLeftDist);
+      }
+      break;
+    case 2:
+      sonarRightDist = sonarRight.read();
+      senSonarTurn = 0;
+      if (DEBUG)
+      {
+        Serial.print("Sonar Right Distance: ");
+        Serial.println(sonarRightDist);
+      }
+      break;
+    default:
+      Serial.println("Wrong sensor…");
+      senSonarTurn = 0;
+    }
+  }
+}
 
 /*
 getDistance. Get the distance from a Sonar sensor
