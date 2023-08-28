@@ -80,7 +80,6 @@ unsigned int nextTimeSonar = 0;
 unsigned int nextTimeBattery = 0;
 unsigned int nextTimeBumper = 0;
 
-
 // Functions --------
 /*
 checkSonar will update the current ultrasonic sensor to check
@@ -175,70 +174,56 @@ void setup()
 {
   Serial.begin(9600);
 
-  Serial.println("Dual VNH5019 Motor Shield");
-  md.init();
   pinMode(SONAR_CENTER_TRIG_PIN, OUTPUT);
   digitalWrite(SONAR_CENTER_TRIG_PIN, LOW);
   pinMode(SONAR_CENTER_ECHO_PIN, INPUT);
+  if (DEBUG)
+    Serial.println("Initialized Sonar Center.");
 
   pinMode(SONAR_LEFT_TRIG_PIN, OUTPUT);
   digitalWrite(SONAR_LEFT_TRIG_PIN, LOW);
   pinMode(SONAR_LEFT_ECHO_PIN, INPUT);
+  if (DEBUG)
+    Serial.println("Initialized Sonar Left.");
 
   pinMode(SONAR_RIGHT_TRIG_PIN, OUTPUT);
   digitalWrite(SONAR_RIGHT_TRIG_PIN, LOW);
   pinMode(SONAR_RIGHT_ECHO_PIN, INPUT);
+  if (DEBUG)
+    Serial.println("Initialized Sonar Right.");
 
   pinMode(BUMPER_PIN, INPUT);
   digitalWrite(BUMPER_PIN, INPUT_PULLUP);
+  if (DEBUG)
+    Serial.println("Initialized Bumper.");
 
-  // Initialize la sortie du relai
+  md.init();
+  if (DEBUG)
+    Serial.println("Initialized motors.");
+
   pinMode(MOW_MOTOR_PIN, OUTPUT);
-  // relai par défaut éteint
   digitalWrite(MOW_MOTOR_PIN, HIGH);
-
-  // démarrage du programme tonte autonome
-  delay(5000);
+  if (DEBUG)
+    Serial.println("Initialized mow motor.");
 
   // déclenchement du relai moteur tonte progressif
-  digitalWrite(MOW_MOTOR_PIN, LOW);
-  delay(100);
-  digitalWrite(MOW_MOTOR_PIN, HIGH);
-  delay(1000);
-  digitalWrite(MOW_MOTOR_PIN, LOW);
-  delay(100);
-  digitalWrite(MOW_MOTOR_PIN, HIGH);
-  delay(1000);
-  digitalWrite(MOW_MOTOR_PIN, LOW);
-}
-
-///////////// Go Forward Routine ///////////////////
-void goforward()
-{
-  analogWrite(E1, 210);
-  digitalWrite(M1, LOW);
-  analogWrite(E2, 210);
-  digitalWrite(M2, LOW);
-  digitalWrite(ledpinCapteur, HIGH);
-  delay(50);
-  digitalWrite(ledpinCapteur, LOW);
-  delay(1000);
-}
-///////////// Turn Right Routine ///////////////////
-void turnright()
-{
-  analogWrite(E1, 210);
-  digitalWrite(M1, LOW);
-  analogWrite(E2, 210);
-  digitalWrite(M2, HIGH);
-}
-///////////// Turn Left Routine ///////////////////
-void turnleft()
-{
-  analogWrite(E1, 210);
-  digitalWrite(M1, HIGH);
-  analogWrite(E2, 210);
-  digitalWrite(M2, LOW);
+  if (DEBUG)
+  {
+    Serial.println("Skip launching mow motor in debug mode.")
+  }
+  else
+  {
+    // TODO: Pourquoi?
+    digitalWrite(MOW_MOTOR_PIN, LOW);
+    delay(100);
+    digitalWrite(MOW_MOTOR_PIN, HIGH);
+    delay(1000);
+    digitalWrite(MOW_MOTOR_PIN, LOW);
+    delay(100);
+    digitalWrite(MOW_MOTOR_PIN, HIGH);
+    delay(1000);
+    digitalWrite(MOW_MOTOR_PIN, LOW);
+  }
 }
 
 void loop()
