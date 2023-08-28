@@ -126,24 +126,6 @@ void checkSonar()
   }
 }
 
-/*
-getDistance. Get the distance from a Sonar sensor (without Ultrasonic lib)
-*/
-// float getDistance(Ultrasonic sonar)
-// {
-// digitalWrite(trigPin, LOW);
-// delayMicroseconds(2);
-// digitalWrite(trigPin, HIGH);
-// delayMicroseconds(10);
-// digitalWrite(trigPin, LOW);
-
-// float distance = (pulseIn(echoPin, HIGH); *.0343) / 2;
-//   if (DEBUG)
-//   {
-//     Serial.printf("Got distance: %f", distance);
-//   }
-// }
-
 void checkBattery()
 {
   if (millis() >= nextTimeBattery)
