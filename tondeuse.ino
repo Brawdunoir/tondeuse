@@ -2,9 +2,11 @@
 #include "Ultrasonic.h"
 
 // Constants ------------------------------------
-const float MAX_SPEED = 400;
-const float SONAR_TIMEOUT = 20000UL; // 20ms to get approx 3.4m of range
 const bool DEBUG = true;
+const float MAX_SPEED = 400;
+const float SONAR_TIMEOUT = 20000UL;      // 20ms to get approx 3.4m of range
+const float SONAR_MIN_DISTANCE = 50;      // 50cm
+const float SONAR_CRITICAL_DISTANCE = 10; // 10cm
 // ----------------------------------------------
 
 // Pins -----------------------------------------
@@ -170,6 +172,14 @@ void checkBattery()
   }
 }
 
+void printDebug(string msg)
+{
+  if (DEBUG)
+  {
+    Serial.println(msg);
+  }
+}
+
 void setup()
 {
   Serial.begin(9600);
@@ -177,41 +187,30 @@ void setup()
   pinMode(SONAR_CENTER_TRIG_PIN, OUTPUT);
   digitalWrite(SONAR_CENTER_TRIG_PIN, LOW);
   pinMode(SONAR_CENTER_ECHO_PIN, INPUT);
-  if (DEBUG)
-    Serial.println("Initialized Sonar Center.");
+  printDebug("Initialized Sonar Center.");
 
   pinMode(SONAR_LEFT_TRIG_PIN, OUTPUT);
   digitalWrite(SONAR_LEFT_TRIG_PIN, LOW);
   pinMode(SONAR_LEFT_ECHO_PIN, INPUT);
-  if (DEBUG)
-    Serial.println("Initialized Sonar Left.");
+  printDebug("Initialized Sonar Left.");
 
   pinMode(SONAR_RIGHT_TRIG_PIN, OUTPUT);
   digitalWrite(SONAR_RIGHT_TRIG_PIN, LOW);
   pinMode(SONAR_RIGHT_ECHO_PIN, INPUT);
-  if (DEBUG)
-    Serial.println("Initialized Sonar Right.");
+  printDebug("Initialized Sonar Right.");
 
   pinMode(BUMPER_PIN, INPUT);
   digitalWrite(BUMPER_PIN, INPUT_PULLUP);
-  if (DEBUG)
-    Serial.println("Initialized Bumper.");
+  printDebug("Initialized Bumper.");
 
   md.init();
-  if (DEBUG)
-    Serial.println("Initialized motors.");
+  printDebug("Initialized motors.");
 
   pinMode(MOW_MOTOR_PIN, OUTPUT);
   digitalWrite(MOW_MOTOR_PIN, HIGH);
-  if (DEBUG)
-    Serial.println("Initialized mow motor.");
+  printDebug("Initialized mow motor.");
 
-  // déclenchement du relai moteur tonte progressif
-  if (DEBUG)
-  {
-    Serial.println("Skip launching mow motor in debug mode.")
-  }
-  else
+  printDebug("Skip launching mow motor in debug mode.") if (!DEBUG)
   {
     // TODO: Pourquoi?
     digitalWrite(MOW_MOTOR_PIN, LOW);
@@ -231,5 +230,26 @@ void loop()
   checkBattery();
   checkBumper();
   checkSonar();
-  
+
+  // Obstacle near anywhere
+  if (sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE)
+  {
+    printDebug("Obstacle detected, slowing down");
+    // TODO: Décélerrer.
+  }
+  else if (sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE || bumperState)
+  {
+    printDebug("Obstacle in critical zone");
+    // TODO: Reculer et tourner dans le sens inverse de l'obstacle.
+  }
+  else if (batteryLevel < 20)
+  {
+    printDebug("Battery below 20%, stopping all motors and activate LED.");
+    // TODO: Tout arrêter et clignoter LED.
+  }
+  else
+  {
+    printDebug("Straight Forward Captain!");
+    // TODO: Accélérer.
+  }
 }
