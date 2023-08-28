@@ -66,7 +66,7 @@ float speed = 0;
 float PasAccel = 10; // TODO: Voir pour l'enlever avec meilleure méthode accélération (ardumower)
 
 // Bumper
-int etatInter1 = 1;
+int bumperState = 0;
 
 // Sonar
 long sonarCenterDist, sonarLeftDist, sonarRightDist;
@@ -78,6 +78,8 @@ float batteryLevel = 100;
 // Next Time ------------------------------------
 unsigned int nextTimeSonar = 0;
 unsigned int nextTimeBattery = 0;
+unsigned int nextTimeBumper = 0;
+
 
 // Functions --------
 /*
@@ -122,6 +124,27 @@ void checkSonar()
     default:
       Serial.println("Wrong sensor…");
       senSonarTurn = 0;
+    }
+  }
+  if (DEBUG)
+  {
+    nextTimeSonar = millis() + 2500;
+  }
+}
+
+void checkBumper()
+{
+  if (millis() >= nextTimeBumper)
+  {
+    nextTimeBumper = millis() + 100;
+
+    bumperState = digitalRead(BUMPER_PIN);
+
+    if (DEBUG)
+    {
+      Serial.print("Bumper State: ");
+      Serial.println(bumperState);
+      nextTimeBumper = millis() + 1000;
     }
   }
 }
