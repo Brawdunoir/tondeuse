@@ -1,13 +1,13 @@
 #include <DualVNH5019MotorShield.h>
 #include "Ultrasonic.h"
 
-// Constants --------
+// Constants ------------------------------------
 const float MAX_SPEED = 400;
 const float SONAR_TIMEOUT = 20000UL; // 20ms to get approx 3.4m of range
 const bool DEBUG = true;
-// ------------------
+// ----------------------------------------------
 
-// Pins -------------
+// Pins -----------------------------------------
 // JSN-SR04 Central
 const int SONAR_CENTER_TRIG_PIN = 50;
 const int SONAR_CENTER_ECHO_PIN = 48;
@@ -38,10 +38,8 @@ const float BATTERY_MIN_VOLTAGE = 11.2;
 const float BATTERY_MIN_VALUE = (1023 * BATTERY_MIN_VOLTAGE) / 5;
 const float BATTERY_MAX_VOLTAGE = 14.4;
 const float BATTERY_MAX_VALUE = (1023 * BATTERY_MAX_VOLTAGE) / 5;
-// TODO: Pas compris
-// int getBATTERIE = (INPUT);
 
-// TODO: Donner des meilleurs noms
+// TODO: Donner des meilleurs noms et puis pas sûr qu'on en ait besoin avec la lib DualVNH…
 int E1 = 6; // M1 Speed Control
 int E2 = 5; // M2 Speed Control
 int M1 = 8; // M1 Direction Control
@@ -60,13 +58,22 @@ const int whitelevl = 600; // reading level is white if <600
 const int blacklevl = 850; // reading level is black if >850
 ////////////////////////////////////////////////////////////Batterie
 int ledpinBatterie = 3; // TODO Kesque Se ?
-// ------------------
+// ----------------------------------------------
 
-// Variables
+// Variables ------------------------------------
+// Motor speed
 float speed = 0;
 float PasAccel = 10; // TODO: Voir pour l'enlever avec meilleure méthode accélération (ardumower)
+
+// Bumper
+int etatInter1 = 1;
+
 // Sonar
 long sonarCenterDist, sonarLeftDist, sonarRightDist;
+
+// Battery
+float batteryLevel = 100;
+// ----------------------------------------------
 
 // Next Time ------------------------------------
 unsigned int nextTimeSonar = 0;
@@ -120,8 +127,23 @@ void checkSonar()
 }
 
 /*
-getDistance. Get the distance from a Sonar sensor
+getDistance. Get the distance from a Sonar sensor (without Ultrasonic lib)
 */
+// float getDistance(Ultrasonic sonar)
+// {
+// digitalWrite(trigPin, LOW);
+// delayMicroseconds(2);
+// digitalWrite(trigPin, HIGH);
+// delayMicroseconds(10);
+// digitalWrite(trigPin, LOW);
+
+// float distance = (pulseIn(echoPin, HIGH); *.0343) / 2;
+//   if (DEBUG)
+//   {
+//     Serial.printf("Got distance: %f", distance);
+//   }
+// }
+
 void checkBattery()
 {
   if (millis() >= nextTimeBattery)
@@ -212,32 +234,6 @@ void turnleft()
   digitalWrite(M1, HIGH);
   analogWrite(E2, 210);
   digitalWrite(M2, LOW);
-}
-
-void getBATTERIE()
-{
-  float b = analogRead(BATTERY_PIN);
-
-  int minValue = (1023 * TensionMin) / 5;
-  int maxValue = (1023 * TensionMax) / 5;
-
-  b = ((b - minValue) / (maxValue - minValue)) * 100;
-
-  if (b > 100)
-    b = 100;
-  else if (b = 0)
-    b = 0;
-  if (b = 20)
-  {
-    goforward();
-    digitalWrite(MOW_MOTOR_PIN, HIGH);
-    digitalWrite(ledpinBatterie, HIGH);
-    delay(50);
-    digitalWrite(ledpinBatterie, LOW);
-    delay(2000);
-  }
-  int valeur = b;
-  return b;
 }
 
 void loop()
