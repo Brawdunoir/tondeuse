@@ -17,13 +17,13 @@ const int SONAR_CENTER_ECHO_PIN = 48;
 Ultrasonic sonarCenter(SONAR_CENTER_TRIG_PIN, SONAR_CENTER_ECHO_PIN, SONAR_TIMEOUT);
 
 // HC-SR04 Left
-const int SONAR_LEFT_TRIG_PIN = 30;
-const int SONAR_LEFT_ECHO_PIN = 32;
+const int SONAR_LEFT_TRIG_PIN = 32;
+const int SONAR_LEFT_ECHO_PIN = 30;
 Ultrasonic sonarLeft(SONAR_LEFT_TRIG_PIN, SONAR_LEFT_ECHO_PIN, SONAR_TIMEOUT);
 
 // HC-SR04 Right
-const int SONAR_RIGHT_TRIG_PIN = 26;
-const int SONAR_RIGHT_ECHO_PIN = 28;
+const int SONAR_RIGHT_TRIG_PIN = 28;
+const int SONAR_RIGHT_ECHO_PIN = 26;
 Ultrasonic sonarRight(SONAR_RIGHT_TRIG_PIN, SONAR_RIGHT_ECHO_PIN, SONAR_TIMEOUT);
 
 // Bumper
@@ -84,6 +84,8 @@ unsigned int nextTimeBattery = 0;
 unsigned int nextTimeBumper = 0;
 unsigned int lastSetMotorSpeedTime = 0;
 
+int senSonarTurn = 0;
+
 // Helpers --------------------------------------
 void printDebug(String msg)
 {
@@ -138,10 +140,6 @@ void checkSonar()
       Serial.println("Wrong sensor…");
       senSonarTurn = 0;
     }
-  }
-  if (DEBUG)
-  {
-    nextTimeSonar = millis() + 2500;
   }
 }
 
