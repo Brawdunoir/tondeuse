@@ -279,8 +279,7 @@ void loop()
     // TODO: Clignoter la LED
     printDebug("One of the motor has a fault!!!");
   }
-  
-  if (batteryLevel < 20)
+  else if (batteryLevel < 20)
   {
     // printDebug("Battery below 20%, stopping all motors and activate LED.");
     motorSpeed(0, 0);
