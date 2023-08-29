@@ -4,7 +4,7 @@
 // Constants ------------------------------------
 const bool DEBUG = true;
 const float MOTOR_MAX_SPEED = 400;
-const float SONAR_TIMEOUT = 20000UL;      // 20ms to get approx 3.4m of range
+const float SONAR_TIMEOUT = 10000UL;      // 20ms to get approx 3.4m of range
 const float SONAR_MIN_DISTANCE = 50;      // 50cm
 const float SONAR_CRITICAL_DISTANCE = 10; // 10cm
 const float MOTOR_ACCELERATION = 1000;
@@ -98,6 +98,21 @@ void printDebug(String msg)
 
 // Functions ------------------------------------
 /*
+getDistance. Get the distance from a Sonar sensor (without Ultrasonic lib)
+*/
+float getDistance(int trigPin, int echoPin)
+{
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(SONAR_TIMEOUT);
+  digitalWrite(trigPin, LOW);
+
+  float distance = (pulseIn(echoPin, HIGH) * .0343) / 2;
+  return distance;
+}
+
+/*
 checkSonar will update the current ultrasonic sensor to check
 */
 void checkSonar()
@@ -116,7 +131,7 @@ void checkSonar()
     switch (senSonarTurn)
     {
     case 0:
-      sonarCenterDist = sonarCenter.read();
+      sonarCenterDist = getDistance(SONAR_CENTER_TRIG_PIN, SONAR_CENTER_ECHO_PIN);
       senSonarTurn++;
       if (DEBUG)
       {
