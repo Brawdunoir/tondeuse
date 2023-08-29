@@ -47,6 +47,8 @@ const float BATTERY_MAX_VALUE = (1023 * BATTERY_MAX_VOLTAGE) / 5;
 // Motor speeds
 float motorRightSpeed = 0;
 float motorLeftSpeed = 0;
+unsigned char motorRightFault = 0;
+unsigned char motorLeftFault = 0;
 
 // Bumper
 bool bumperState = false;
@@ -62,9 +64,11 @@ float batteryLevel = 100;
 unsigned int nextTimeSonar = 0;
 unsigned int nextTimeBattery = 0;
 unsigned int nextTimeBumper = 0;
+unsigned int nextTimeMotorFault = 0;
 unsigned int lastSetMotorSpeedTime = 0;
 
 int senSonarTurn = 0;
+int senMotorFaultTurn = 0;
 
 // Helpers --------------------------------------
 void printDebug(String msg)
@@ -140,6 +144,30 @@ void checkSonar()
     default:
       Serial.println("Wrong sensor…");
       senSonarTurn = 0;
+    }
+  }
+}
+
+void checkMotorFault()
+{
+  if (millis() >= nextTimeMotorFault)
+  {
+    nextTimeMotorFault = millis() + 300000; // every 5mn
+
+    switch (senMotorFaultTurn)
+    {
+    case 0:
+      motorRightFault = md.getM1Fault();
+      senMotorFaultTurn = 1;
+      break;
+    case 1:
+      motorLeftFault = md.getM2Fault();
+      senMotorFaultTurn = 0;
+      break;
+    default:
+      Serial.println("Wrong motor…")
+      senMotorFaultTurn = 0;
+      break;
     }
   }
 }
@@ -241,11 +269,17 @@ void setup()
 
 void loop()
 {
-  // TODO: Add check fault on motors
+  checkMotorFault();
   // checkBattery();
   checkBumper();
   checkSonar();
 
+  if (motorLeftFault || motorRightFault)
+  {
+    // TODO: Clignoter la LED
+    printDebug("One of the motor has a fault!!!");
+  }
+  
   if (batteryLevel < 20)
   {
     // printDebug("Battery below 20%, stopping all motors and activate LED.");
