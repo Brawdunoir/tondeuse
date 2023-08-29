@@ -262,7 +262,7 @@ void setup()
 void loop()
 {
   // TODO: Add check fault on motors
-  checkBattery();
+  // checkBattery();
   checkBumper();
   checkSonar();
 
