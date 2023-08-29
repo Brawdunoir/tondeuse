@@ -27,7 +27,7 @@ const int SONAR_RIGHT_ECHO_PIN = 26;
 Ultrasonic sonarRight(SONAR_RIGHT_TRIG_PIN, SONAR_RIGHT_ECHO_PIN, SONAR_TIMEOUT);
 
 // Bumper
-const int BUMPER_PIN = 34;
+const int BUMPER_PIN = 41;
 
 // Motors
 DualVNH5019MotorShield md; // Use default pins
