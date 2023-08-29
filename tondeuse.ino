@@ -7,7 +7,7 @@ const float MOTOR_MAX_SPEED = 400;
 const float SONAR_TIMEOUT = 10000UL;      // 20ms to get approx 3.4m of range
 const float SONAR_MIN_DISTANCE = 50;      // 50cm
 const float SONAR_CRITICAL_DISTANCE = 10; // 10cm
-const float MOTOR_ACCELERATION = 1000;
+const float MOTOR_ACCELERATION = 500;
 // ----------------------------------------------
 
 // Pins -----------------------------------------
