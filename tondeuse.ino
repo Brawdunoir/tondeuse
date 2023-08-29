@@ -104,8 +104,14 @@ void checkSonar()
 {
   if (millis() >= nextTimeSonar)
   {
-    static short senSonarTurn = 0;
-    nextTimeSonar = millis() + 250;
+    if (DEBUG)
+    {
+      nextTimeSonar = millis() + 250;
+    }
+    else
+    {
+      nextTimeSonar = millis() + 250;
+    }
 
     switch (senSonarTurn)
     {
