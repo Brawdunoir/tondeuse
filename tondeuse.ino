@@ -3,10 +3,11 @@
 
 // Constants ------------------------------------
 const bool DEBUG = true;
-const float MAX_SPEED = 400;
-const float SONAR_TIMEOUT = 20000UL;      // 20ms to get approx 3.4m of range
-const float SONAR_MIN_DISTANCE = 50;      // 50cm
-const float SONAR_CRITICAL_DISTANCE = 10; // 10cm
+const float MOTOR_MAX_SPEED = 400;
+const float SONAR_TIMEOUT = 20000UL;     // 20ms to get approx 3.4m of range
+const float SONAR_MIN_DISTANCE = 50;     // 50cm
+const float SONAR_CRITICAL_DISTANCE = 5; // 5cm
+const float MOTOR_ACCELERATION = 1000;
 // ----------------------------------------------
 
 // Pins -----------------------------------------
@@ -63,9 +64,9 @@ int ledpinBatterie = 3; // TODO Kesque Se ?
 // ----------------------------------------------
 
 // Variables ------------------------------------
-// Motor speed
-float speed = 0;
-float PasAccel = 10; // TODO: Voir pour l'enlever avec meilleure méthode accélération (ardumower)
+// Motor speeds
+float motorRightSpeed = 0;
+float motorLeftSpeed = 0;
 
 // Bumper
 int bumperState = 0;
@@ -81,8 +82,19 @@ float batteryLevel = 100;
 unsigned int nextTimeSonar = 0;
 unsigned int nextTimeBattery = 0;
 unsigned int nextTimeBumper = 0;
+unsigned int lastSetMotorSpeedTime = 0;
 
-// Functions --------
+// Helpers --------------------------------------
+void printDebug(String msg)
+{
+  if (DEBUG)
+  {
+    Serial.println(msg);
+  }
+}
+// ----------------------------------------------
+
+// Functions ------------------------------------
 /*
 checkSonar will update the current ultrasonic sensor to check
 */
@@ -172,13 +184,31 @@ void checkBattery()
   }
 }
 
-void printDebug(string msg)
+void motorSpeed(int speedLeft, int speedRight)
 {
+  unsigned long TaC = millis() - lastSetMotorSpeedTime; // sampling time in millis
+  lastSetMotorSpeedTime = millis();
+  if (TaC > 1000)
+    TaC = 1;
+
+  // Assert that speeds are not above limit
+  speedLeft = constrain(speedLeft, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
+  speedRight = constrain(speedRight, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
+
+  motorLeftSpeed += TaC * (speedLeft - motorLeftSpeed) / MOTOR_ACCELERATION;
+  motorRightSpeed += TaC * (speedRight - motorRightSpeed) / MOTOR_ACCELERATION;
+
   if (DEBUG)
   {
-    Serial.println(msg);
+    Serial.print("Motor Right: ");
+    Serial.println(motorRightSpeed);
+    Serial.print("Motor Left: ");
+    Serial.println(motorLeftSpeed);
   }
+
+  md.setSpeeds(motorRightSpeed, motorLeftSpeed);
 }
+// ----------------------------------------------
 
 void setup()
 {
@@ -210,7 +240,8 @@ void setup()
   digitalWrite(MOW_MOTOR_PIN, HIGH);
   printDebug("Initialized mow motor.");
 
-  printDebug("Skip launching mow motor in debug mode.") if (!DEBUG)
+  printDebug("Skip starting mow motor in debug mode.");
+  if (!DEBUG)
   {
     // TODO: Pourquoi?
     digitalWrite(MOW_MOTOR_PIN, LOW);
@@ -227,6 +258,7 @@ void setup()
 
 void loop()
 {
+  // TODO: Add check fault on motors
   checkBattery();
   checkBumper();
   checkSonar();
@@ -235,21 +267,23 @@ void loop()
   if (sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE)
   {
     printDebug("Obstacle detected, slowing down");
-    // TODO: Décélerrer.
+    motorSpeed(50, 50);
   }
   else if (sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE || bumperState)
   {
     printDebug("Obstacle in critical zone");
+    md.setBrakes(400, 400);
     // TODO: Reculer et tourner dans le sens inverse de l'obstacle.
   }
   else if (batteryLevel < 20)
   {
     printDebug("Battery below 20%, stopping all motors and activate LED.");
+    md.setBrakes(400, 400);
     // TODO: Tout arrêter et clignoter LED.
   }
   else
   {
     printDebug("Straight Forward Captain!");
-    // TODO: Accélérer.
+    motorSpeed(400, 400);
   }
 }
