@@ -69,7 +69,7 @@ float motorRightSpeed = 0;
 float motorLeftSpeed = 0;
 
 // Bumper
-int bumperState = 0;
+bool bumperState = false;
 
 // Sonar
 long sonarCenterDist, sonarLeftDist, sonarRightDist;
@@ -149,7 +149,7 @@ void checkBumper()
   {
     nextTimeBumper = millis() + 100;
 
-    bumperState = digitalRead(BUMPER_PIN);
+    bumperState = digitalRead(BUMPER_PIN) == 0;
 
     if (DEBUG)
     {
