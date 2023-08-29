@@ -210,6 +210,7 @@ void motorSpeed(int speedLeft, int speedRight)
 
 void setup()
 {
+  Serial.flush();
   Serial.begin(9600);
 
   pinMode(SONAR_CENTER_TRIG_PIN, OUTPUT);
