@@ -217,14 +217,6 @@ void motorSpeed(int speedLeft, int speedRight)
   motorLeftSpeed += TaC * (speedLeft - motorLeftSpeed) / MOTOR_ACCELERATION;
   motorRightSpeed += TaC * (speedRight - motorRightSpeed) / MOTOR_ACCELERATION;
 
-  if (DEBUG)
-  {
-    Serial.print("Motor Right: ");
-    Serial.println(motorRightSpeed);
-    Serial.print("Motor Left: ");
-    Serial.println(motorLeftSpeed);
-  }
-
   md.setSpeeds(motorRightSpeed, motorLeftSpeed);
 }
 // ----------------------------------------------
