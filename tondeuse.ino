@@ -41,26 +41,6 @@ const float BATTERY_MIN_VOLTAGE = 11.2;
 const float BATTERY_MIN_VALUE = (1023 * BATTERY_MIN_VOLTAGE) / 5;
 const float BATTERY_MAX_VOLTAGE = 14.4;
 const float BATTERY_MAX_VALUE = (1023 * BATTERY_MAX_VOLTAGE) / 5;
-
-// TODO: Donner des meilleurs noms et puis pas sûr qu'on en ait besoin avec la lib DualVNH…
-int E1 = 6; // M1 Speed Control
-int E2 = 5; // M2 Speed Control
-int M1 = 8; // M1 Direction Control
-int M2 = 7; // M2 Direction Control
-
-///////////////////////////////////////////////////////capteur de fil
-int rsensor = 2; // Left Sensor on Analog Pin 2
-int lsensor = 1; // Right Sensor on Analog Pin 1
-int msensor = 0; // Middle Sensor on Analog Pin 0
-
-int val = analogRead, (x); // TODO Qu'est ce que c'est ?
-
-// TODO Keske C ?
-int ledpinCapteur = 13;
-const int whitelevl = 600; // reading level is white if <600
-const int blacklevl = 850; // reading level is black if >850
-////////////////////////////////////////////////////////////Batterie
-int ledpinBatterie = 3; // TODO Kesque Se ?
 // ----------------------------------------------
 
 // Variables ------------------------------------
