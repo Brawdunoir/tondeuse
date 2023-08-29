@@ -261,27 +261,27 @@ void loop()
   checkBumper();
   checkSonar();
 
-  // Obstacle near anywhere
-  if (sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE)
+  if (batteryLevel < 20)
   {
-    printDebug("Obstacle detected, slowing down");
-    motorSpeed(50, 50);
+    // printDebug("Battery below 20%, stopping all motors and activate LED.");
+    motorSpeed(0, 0);
+    // TODO: Tout arrêter et clignoter LED.
   }
   else if (sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE || bumperState)
   {
-    printDebug("Obstacle in critical zone");
-    md.setBrakes(400, 400);
+    // printDebug("Obstacle in critical zone");
+    motorSpeed(0, 0);
     // TODO: Reculer et tourner dans le sens inverse de l'obstacle.
   }
-  else if (batteryLevel < 20)
+  // Obstacle near anywhere
+  else if (sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE)
   {
-    printDebug("Battery below 20%, stopping all motors and activate LED.");
-    md.setBrakes(400, 400);
-    // TODO: Tout arrêter et clignoter LED.
+    // printDebug("Obstacle detected, slowing down");
+    motorSpeed(25, 25);
   }
   else
   {
-    printDebug("Straight Forward Captain!");
+    // printDebug("Straight Forward Captain!");
     motorSpeed(400, 400);
   }
 }
