@@ -289,14 +289,23 @@ void loop()
   else if (sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE || bumperState)
   {
     // printDebug("Obstacle in critical zone");
-    motorSpeed(0, 0);
+    motorSpeed(-50, -50);
     // TODO: Reculer et tourner dans le sens inverse de l'obstacle.
   }
   // Obstacle near anywhere
   else if (sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE)
   {
     // printDebug("Obstacle detected, slowing down");
-    motorSpeed(25, 25);
+    // ? Il se peut que ce bout de code ne fasse pas ce que l’on veut, à savoir commencer une manœuvre d’évitement de l’obstacle
+    // TODO: S’assurer que le tournant gauche (resp. droite) soit le bon (à voir avec les branchements)
+    if (sonarLeftDist < SONAR_MIN_DISTANCE)
+    {
+      motorSpeed(25, -10); // Turn Right
+    }
+    else
+    {
+      motorSpeed(-10, 25); // Turn Left
+    }
   }
   else
   {
