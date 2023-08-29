@@ -284,7 +284,8 @@ void loop()
   {
     // printDebug("Battery below 20%, stopping all motors and activate LED.");
     motorSpeed(0, 0);
-    // TODO: Tout arrêter et clignoter LED.
+    digitalWrite(MOW_MOTOR_PIN, HIGH);
+    // TODO: Clignoter la LED
   }
   else if (sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE || bumperState)
   {
