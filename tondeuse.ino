@@ -4,9 +4,9 @@
 // Constants ------------------------------------
 const bool DEBUG = true;
 const float MOTOR_MAX_SPEED = 400;
-const float SONAR_TIMEOUT = 20000UL;     // 20ms to get approx 3.4m of range
-const float SONAR_MIN_DISTANCE = 50;     // 50cm
-const float SONAR_CRITICAL_DISTANCE = 5; // 5cm
+const float SONAR_TIMEOUT = 20000UL;      // 20ms to get approx 3.4m of range
+const float SONAR_MIN_DISTANCE = 50;      // 50cm
+const float SONAR_CRITICAL_DISTANCE = 10; // 10cm
 const float MOTOR_ACCELERATION = 1000;
 // ----------------------------------------------
 
