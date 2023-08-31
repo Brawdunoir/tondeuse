@@ -39,7 +39,7 @@ const int MOW_MOTOR_PIN = 40;
 const int BATTERY_PIN = A13;
 const float BATTERY_MIN_VOLTAGE = 11.2;
 const float BATTERY_MIN_VALUE = (1023 * BATTERY_MIN_VOLTAGE) / 5;
-const float BATTERY_MAX_VOLTAGE = 14.4;
+const float BATTERY_MAX_VOLTAGE = 14.45;// real after full charging
 const float BATTERY_MAX_VALUE = (1023 * BATTERY_MAX_VOLTAGE) / 5;
 // ----------------------------------------------
 
