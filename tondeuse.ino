@@ -165,7 +165,7 @@ void checkMotorFault()
       senMotorFaultTurn = 0;
       break;
     default:
-      Serial.println("Wrong motor…")
+      Serial.println("Wrong motor…");
       senMotorFaultTurn = 0;
       break;
     }
@@ -225,7 +225,7 @@ void motorSpeed(int speedLeft, int speedRight)
   motorLeftSpeed += TaC * (speedLeft - motorLeftSpeed) / MOTOR_ACCELERATION;
   motorRightSpeed += TaC * (speedRight - motorRightSpeed) / MOTOR_ACCELERATION;
 
-  md.setSpeeds(motorRightSpeed, motorLeftSpeed);
+  md.setSpeeds(motorLeftSpeed, motorRightSpeed);
 }
 // ----------------------------------------------
 
