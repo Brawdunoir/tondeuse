@@ -2,12 +2,12 @@
 #include "Ultrasonic.h"
 
 // Constants ------------------------------------
-const bool DEBUG = false; // activate logs
+const bool DEBUG = true; // activate logs
 const float MOTOR_MAX_SPEED = 400;
 const float SONAR_TIMEOUT = 10000UL;      // 20ms to get approx 3.4m of range
-const float SONAR_MIN_DISTANCE = 50;      // 50cm
-const float SONAR_CRITICAL_DISTANCE = 10; // 10cm
-const float MOTOR_ACCELERATION = 500;
+const float SONAR_MIN_DISTANCE = 60;      // 60cm
+const float SONAR_CRITICAL_DISTANCE = 20; // 20cm
+const float MOTOR_ACCELERATION = 400;
 // ----------------------------------------------
 
 // Pins -----------------------------------------
@@ -30,7 +30,7 @@ Ultrasonic sonarRight(SONAR_RIGHT_TRIG_PIN, SONAR_RIGHT_ECHO_PIN, SONAR_TIMEOUT)
 const int BUMPER_PIN = 41;
 
 // Led
-const int LED_PIN = 3; 
+const int LED_PIN = 13; 
 
 // Motors
 DualVNH5019MotorShield md; // Use default pins
@@ -272,9 +272,9 @@ void setup()
 
 void loop()
 {
-  checkMotorFault();
-  // checkBattery();
-  checkBumper();
+  //checkMotorFault();
+  //checkBattery();
+  //checkBumper();
   checkSonar();
 
   if (motorLeftFault || motorRightFault)
@@ -300,14 +300,21 @@ void loop()
   {
     // printDebug("Obstacle detected, slowing down");
     // ? Il se peut que ce bout de code ne fasse pas ce que l’on veut, à savoir commencer une manœuvre d’évitement de l’obstacle
-    // TODO: S’assurer que le tournant gauche (resp. droite) soit le bon (à voir avec les branchements)
     if (sonarLeftDist < SONAR_MIN_DISTANCE)
     {
-      motorSpeed(25, -10); // Turn Right
+      motorSpeed(50, 10); // Turn Right
     }
     else
     {
-      motorSpeed(-10, 25); // Turn Left
+      motorSpeed(10, 50); // Turn Left
+    }
+    if(sonarRightDist < SONAR_MIN_DISTANCE)
+    {
+      motorSpeed(10, 50);
+    }       
+    else
+    {
+      motorSpeed(50, 10);
     }
   }
   else
