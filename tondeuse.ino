@@ -30,7 +30,7 @@ Ultrasonic sonarRight(SONAR_RIGHT_TRIG_PIN, SONAR_RIGHT_ECHO_PIN, SONAR_TIMEOUT)
 const int BUMPER_PIN = 41;
 
 // Led
-const int LED_PIN = 13;
+const int LED_PIN = 3;
 
 // Motors
 DualVNH5019MotorShield md; // Use default pins
