@@ -40,10 +40,8 @@ const int MOW_MOTOR_PIN = 40;
 
 // Battery
 const int BATTERY_PIN = A13;
-const float BATTERY_MIN_VOLTAGE = 11.2;
-const float BATTERY_MIN_VALUE = (1023 * BATTERY_MIN_VOLTAGE) / 5;
-const float BATTERY_MAX_VOLTAGE = 14.45; // real after full charging
-const float BATTERY_MAX_VALUE = (1023 * BATTERY_MAX_VOLTAGE) / 5;
+const float BATTERY_MIN_VOLTAGE = 1;
+const float BATTERY_MAX_VOLTAGE = 5;
 // ----------------------------------------------
 
 // Variables ------------------------------------
@@ -214,14 +212,11 @@ void checkBattery()
   {
     nextTimeBattery = millis() + 60000;
 
-    float result = ((analogRead(BATTERY_PIN) - BATTERY_MIN_VALUE) / (BATTERY_MAX_VALUE - BATTERY_MIN_VALUE)) * 100;
+    float measure = analogRead(BATTERY_PIN);
+    float voltage = measure * 5.0 / 1023;
+    batteryLevel = map(voltage, BATTERY_MIN_VOLTAGE, BATTERY_MAX_VOLTAGE, 0, 100);
+    batteryLevel = constrain(batteryLevel, 0, 100);
 
-    if (result > 100)
-      result = 100;
-    else if (result < 0)
-      result = 0;
-
-    batteryLevel = result;
     if (DEBUG)
     {
       Serial.print("Battery Level: ");
@@ -309,10 +304,10 @@ void loop()
   }
   else if (batteryLevel < 20)
   {
-    // printDebug("Battery below 20%, stopping all motors and activate LED.");
     motorSpeed(0, 0);
     digitalWrite(MOW_MOTOR_PIN, HIGH);
     flashLED(LED_PIN, 3000);
+    printDebug("Battery below 20%, stopping all motors and activate LED.");
   }
   else if (sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE || bumperState)
   {
