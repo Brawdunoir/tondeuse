@@ -68,6 +68,7 @@ unsigned int nextTimeSonar = 0;
 unsigned int nextTimeBattery = 0;
 unsigned int nextTimeBumper = 0;
 unsigned int nextTimeMotorFault = 0;
+unsigned int nextTimeFlashLed = 0;
 unsigned int lastSetMotorSpeedTime = 0;
 
 int senSonarTurn = 0;
@@ -84,6 +85,21 @@ void printDebug(String msg)
 // ----------------------------------------------
 
 // Functions ------------------------------------
+/*
+flashLED will flash the led at the interval freq in milliseconds.
+*/
+void flashLED(int pin, int freq)
+{
+  if (millis() >= nextTimeFlashLed)
+  {
+    nextTimeFlashLed += freq;
+
+    digitalWrite(pin, HIGH);
+    delay(50);
+    digitalWrite(pin, LOW);
+  }
+}
+
 /*
 getDistance. Get the distance from a Sonar sensor (without Ultrasonic lib)
 */
@@ -259,6 +275,9 @@ void setup()
   md.init();
   printDebug("Initialized motors.");
 
+  pinMode(LED_PIN, OUTPUT);
+  printDebug("Initialized LED");
+
   pinMode(MOW_MOTOR_PIN, OUTPUT);
   digitalWrite(MOW_MOTOR_PIN, HIGH);
   printDebug("Initialized mow motor.");
@@ -277,9 +296,14 @@ void loop()
   checkBumper();
   checkSonar();
 
+  if (DEBUG)
+  {
+    flashLED(LED_PIN, 10000);
+  }
+
   if (motorLeftFault || motorRightFault)
   {
-    // TODO: Clignoter la LED
+    flashLED(LED_PIN, 1000);
     printDebug("One of the motor has a fault!!!");
   }
   else if (batteryLevel < 20)
@@ -287,7 +311,7 @@ void loop()
     // printDebug("Battery below 20%, stopping all motors and activate LED.");
     motorSpeed(0, 0);
     digitalWrite(MOW_MOTOR_PIN, HIGH);
-    // TODO: Clignoter la LED
+    flashLED(LED_PIN, 3000);
   }
   else if (sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE || bumperState)
   {
