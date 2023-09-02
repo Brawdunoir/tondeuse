@@ -268,8 +268,7 @@ void setup()
   pinMode(SONAR_RIGHT_ECHO_PIN, INPUT);
   printDebug("Initialized Sonar Right.");
 
-  pinMode(BUMPER_PIN, INPUT);
-  digitalWrite(BUMPER_PIN, INPUT_PULLUP);
+  pinMode(BUMPER_PIN, INPUT_PULLUP);
   printDebug("Initialized Bumper.");
 
   md.init();
