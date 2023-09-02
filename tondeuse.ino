@@ -303,6 +303,8 @@ void loop()
 
   if (motorLeftFault || motorRightFault)
   {
+    motorSpeed(0, 0);
+    digitalWrite(MOW_MOTOR_PIN, HIGH);
     flashLED(LED_PIN, 1000);
     printDebug("One of the motor has a fault!!!");
   }
