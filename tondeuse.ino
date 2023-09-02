@@ -290,6 +290,9 @@ void loop()
   checkBumper();
   checkSonar();
 
+  bool criticalDistSonar = sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE;
+  bool minDistSonar = sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE;
+
   if (DEBUG)
   {
     flashLED(LED_PIN, 10000);
@@ -309,14 +312,14 @@ void loop()
     flashLED(LED_PIN, 3000);
     printDebug("Battery below 20%, stopping all motors and activate LED.");
   }
-  else if (sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE || bumperState)
+  else if (criticalDistSonar || bumperState)
   {
     // printDebug("Obstacle in critical zone");
     motorSpeed(-50, -50);
     // TODO: Reculer et tourner dans le sens inverse de l'obstacle.
   }
   // Obstacle near anywhere
-  else if (sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE)
+  else if (minDistSonar)
   {
     if (sonarLeftDist < SONAR_MIN_DISTANCE)
     {
