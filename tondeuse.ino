@@ -90,7 +90,7 @@ void flashLED(int pin, int freq)
 {
   if (millis() >= nextTimeFlashLed)
   {
-    nextTimeFlashLed += freq;
+    nextTimeFlashLed = millis() + freq;
 
     digitalWrite(pin, HIGH);
     delay(50);
