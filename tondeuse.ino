@@ -323,23 +323,23 @@ void loop()
   // Obstacle near anywhere
   else if (sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE)
   {
-    // printDebug("Obstacle detected, slowing down");
-    // ? Il se peut que ce bout de code ne fasse pas ce que l’on veut, à savoir commencer une manœuvre d’évitement de l’obstacle
     if (sonarLeftDist < SONAR_MIN_DISTANCE)
     {
-      motorSpeed(50, 10); // Turn Right
+      if (sonarCenterDist < SONAR_MIN_DISTANCE)
+        motorSpeed(50, 10); // Turn Right
+      else
+        motorSpeed(35, 10); // Turn slightly
     }
-    else
+    else if (sonarRightDist < SONAR_MIN_DISTANCE)
     {
-      motorSpeed(10, 50); // Turn Left
+      if (sonarCenterDist < SONAR_MIN_DISTANCE)
+        motorSpeed(10, 50); // Turn Left
+      else
+        motorSpeed(10, 35); // Turn slighlty
     }
-    if (sonarRightDist < SONAR_MIN_DISTANCE)
+    else // Nothing on the left or on the right
     {
-      motorSpeed(10, 50);
-    }
-    else
-    {
-      motorSpeed(50, 10);
+      motorSpeed(50, 50);
     }
   }
   else
