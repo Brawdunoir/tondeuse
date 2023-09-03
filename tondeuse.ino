@@ -337,7 +337,15 @@ void loop()
     else
       reverseAndTurn = false;
   }
-  else if (criticalDistSonar || bumperState)
+  else if (bumperState)
+  {
+    printDebug("Bumper has touched, stop all motors and engaging reverse and turn");
+    md.setSpeeds(0, 0);
+    reverseAndTurn = true;
+    stopReverseTime = millis() + REVERSE_TIME;
+    stopTurnTime = stopReverseTime + TURN_TIME;
+  }
+  else if (criticalDistSonar)
   {
     printDebug("Obstacle in critical zone, engaging reverse and turn");
     reverseAndTurn = true;
