@@ -2,7 +2,7 @@
 #include "Ultrasonic.h"
 
 // Constants ------------------------------------
-const bool DEBUG = true;                 // activate logs
+const bool DEBUG = true;                  // activate logs
 const float MOTOR_MAX_SPEED = 400;        // motor max speed, given by DualVNH5019MotorShield library
 const float SONAR_TIMEOUT = 10000UL;      // 10ms to get approx 1.7m of range
 const float SONAR_MIN_DISTANCE = 80;      // 80cm
@@ -335,7 +335,7 @@ void loop()
       else
         motorSpeed(10, 35); // Turn slighlty
     }
-    else // Nothing on the left or on the right
+    else // Only on the center
     {
       motorSpeed(50, 50);
     }
