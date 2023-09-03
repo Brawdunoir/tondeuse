@@ -2,8 +2,12 @@
 #include "Ultrasonic.h"
 
 // Constants ------------------------------------
-const bool DEBUG = true;                  // activate logs
-const float MOTOR_MAX_SPEED = 400;        // motor max speed, given by DualVNH5019MotorShield library
+const bool DEBUG = false;             // activate overall logs (could be overwhelming)
+const bool DEBUG_BUMPER = false;      // activate bumper logs
+const bool DEBUG_SONAR = false;       // activate sonar logs
+const bool DEBUG_BATTERY = false;     // activate battery logs
+const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
+const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
 const float SONAR_TIMEOUT = 10000UL;      // 10ms to get approx 1.7m of range
 const float SONAR_MIN_DISTANCE = 80;      // 80cm at that sonar range, motor will slow down
 const float SONAR_CRITICAL_DISTANCE = 21; // 21cm at that sonar range, the mower will reverse and then turn
@@ -121,21 +125,12 @@ void checkSonar()
 {
   if (millis() >= nextTimeSonar)
   {
-    if (DEBUG)
-    {
-      nextTimeSonar = millis() + 250;
-    }
-    else
-    {
-      nextTimeSonar = millis() + 250;
-    }
-
     switch (senSonarTurn)
     {
     case 0:
       sonarCenterDist = getDistance(SONAR_CENTER_TRIG_PIN, SONAR_CENTER_ECHO_PIN);
       senSonarTurn++;
-      if (DEBUG)
+      if (DEBUG || DEBUG_SONAR)
       {
         Serial.print("Sonar Center Distance: ");
         Serial.println(sonarCenterDist);
@@ -144,7 +139,7 @@ void checkSonar()
     case 1:
       sonarLeftDist = sonarLeft.read();
       senSonarTurn++;
-      if (DEBUG)
+      if (DEBUG || DEBUG_SONAR)
       {
         Serial.print("Sonar Left Distance: ");
         Serial.println(sonarLeftDist);
@@ -153,7 +148,7 @@ void checkSonar()
     case 2:
       sonarRightDist = sonarRight.read();
       senSonarTurn = 0;
-      if (DEBUG)
+      if (DEBUG || DEBUG_SONAR)
       {
         Serial.print("Sonar Right Distance: ");
         Serial.println(sonarRightDist);
@@ -198,11 +193,10 @@ void checkBumper()
 
     bumperState = digitalRead(BUMPER_PIN) == 0;
 
-    if (DEBUG)
+    if (DEBUG || DEBUG_BUMPER)
     {
       Serial.print("Bumper State: ");
       Serial.println(bumperState);
-      nextTimeBumper = millis() + 1000;
     }
   }
 }
@@ -218,7 +212,7 @@ void checkBattery()
     batteryLevel = map(voltage, BATTERY_MIN_VOLTAGE, BATTERY_MAX_VOLTAGE, 0, 100);
     batteryLevel = constrain(batteryLevel, 0, 100);
 
-    if (DEBUG)
+    if (DEBUG || DEBUG_BATTERY)
     {
       Serial.print("Battery Level: ");
       Serial.println(batteryLevel);
@@ -241,6 +235,14 @@ void motorSpeed(int speedLeft, int speedRight)
   motorRightSpeed += TaC * (speedRight - motorRightSpeed) / MOTOR_ACCELERATION;
 
   md.setSpeeds(motorLeftSpeed, motorRightSpeed);
+
+  if (DEBUG_MOTOR_SPEED) // really verbose logs so not enable in
+  {
+    Serial.print("Motor Left Speed: ");
+    Serial.println(motorLeftSpeed);
+    Serial.print("Motor Right Speed: ");
+    Serial.println(motorRightSpeed);
+  }
 }
 // ----------------------------------------------
 
