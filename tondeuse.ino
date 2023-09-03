@@ -175,6 +175,9 @@ void checkSonar()
       Serial.println("Wrong sensor…");
       senSonarTurn = 0;
     }
+
+    criticalDistSonar = inRange(SONAR_CRITICAL_DISTANCE);
+    minDistSonar = inRange(SONAR_MIN_DISTANCE);
   }
 }
 
@@ -247,7 +250,7 @@ void setMotorsSpeed(int left, int right)
 }
 
 /*
-adjustMotorsSpeed smoothly adjust the motors speeds to the wanted speeds.
+adjustMotorsSpeed smoothly adjusts the motors speeds to the wanted speeds.
 If emergencyBrake is true, abruptly set all speeds to 0.
 */
 void adjustMotorsSpeed()
@@ -277,13 +280,26 @@ void adjustMotorsSpeed()
 
   md.setSpeeds(motorLeftSpeed, motorRightSpeed);
 
-  if (DEBUG_MOTOR_SPEED) // really verbose logs so not enable in
+  if (DEBUG_MOTOR_SPEED) // really verbose logs so not enable in global DEBUG
   {
     Serial.print("Motor Left Speed: ");
     Serial.println(motorLeftSpeed);
     Serial.print("Motor Right Speed: ");
     Serial.println(motorRightSpeed);
   }
+}
+
+/*
+inRange returns true if an obstacle is in the range of one of the sonars.
+It returns false systematically if one of the distance is 0.
+Indeed, before a sonar is queried its distance is 0 so it'll be a false positive.
+*/
+bool inRange(int range)
+{
+  if (!sonarCenterDist || !sonarRightDist || !sonarLeftDist)
+    return false;
+
+  return sonarCenterDist < range || sonarLeftDist < range || sonarRightDist < range;
 }
 // ----------------------------------------------
 
@@ -334,9 +350,6 @@ void loop()
   checkBumper();
   checkSonar();
   adjustMotorsSpeed();
-
-  criticalDistSonar = sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE;
-  minDistSonar = sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE;
 
   if (DEBUG)
   {
