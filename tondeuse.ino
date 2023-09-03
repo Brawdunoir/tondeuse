@@ -3,6 +3,7 @@
 
 // Constants ------------------------------------
 const bool DEBUG = false;                 // activate overall logs (could be overwhelming)
+const bool DEBUG_LOGS = false;            // activate printed logs for states (could be overwhelming)
 const bool DEBUG_BUMPER = false;          // activate bumper logs
 const bool DEBUG_SONAR = false;           // activate sonar logs
 const bool DEBUG_BATTERY = false;         // activate battery logs
@@ -74,6 +75,7 @@ unsigned long nextTimeBattery = 0;       // Next time we check battery level
 unsigned long nextTimeBumper = 0;        // Next time we check bumper
 unsigned long nextTimeMotorFault = 0;    // Next time we check motor faults using DualVNH5019MotorShield lib
 unsigned long nextTimeFlashLed = 0;      // Next time we flash the led
+unsigned long nextPrintDebug = 0;        // Next time we print logs
 unsigned long lastSetMotorSpeedTime = 0; // The last time we updated motors speeds (used in new speed equation)
 unsigned long stopReverseTime = 0;       // Time after which the mower should stop reverse
 unsigned long stopTurnTime = 0;          // Time after which the mower should stop turn
@@ -88,8 +90,9 @@ bool reverseAndTurn = false; // If true, the mower will engage a reverse and tur
 // Helpers --------------------------------------
 void printDebug(String msg)
 {
-  if (DEBUG)
+  if (DEBUG_LOGS && millis() > nextPrintDebug)
   {
+    nextPrintDebug = millis() + 500;
     Serial.println(msg);
   }
 }
@@ -326,16 +329,23 @@ void loop()
   else if (reverseAndTurn)
   {
     if (stopReverseTime > millis())
+    {
+      printDebug("reversing…");
       motorSpeed(-50, -50);
+    }
     else if (stopTurnTime > millis())
     {
+      printDebug("turning…");
       if (sonarLeftDist < SONAR_MIN_DISTANCE)
         motorSpeed(50, -50);
       else
         motorSpeed(-50, 50);
     }
     else
+    {
+      printDebug("stop reversing and turning");
       reverseAndTurn = false;
+    }
   }
   else if (bumperState)
   {
