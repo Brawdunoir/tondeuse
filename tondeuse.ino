@@ -5,8 +5,8 @@
 const bool DEBUG = true;                  // activate logs
 const float MOTOR_MAX_SPEED = 400;        // motor max speed, given by DualVNH5019MotorShield library
 const float SONAR_TIMEOUT = 10000UL;      // 10ms to get approx 1.7m of range
-const float SONAR_MIN_DISTANCE = 80;      // 80cm
-const float SONAR_CRITICAL_DISTANCE = 21; // 21cm
+const float SONAR_MIN_DISTANCE = 80;      // 80cm at that sonar range, motor will slow down
+const float SONAR_CRITICAL_DISTANCE = 21; // 21cm at that sonar range, the mower will reverse and then turn
 const float MOTOR_ACCELERATION = 1000;    // hypothetic value given by ardumower project
 const float BATTERY_MIN_VOLTAGE = 0.5;    // Battery minimum voltage
 const float BATTERY_MAX_VOLTAGE = 5;      // Battery maximum voltage
@@ -16,7 +16,6 @@ const float BATTERY_MAX_VOLTAGE = 5;      // Battery maximum voltage
 // JSN-SR04 Central
 const int SONAR_CENTER_TRIG_PIN = 50;
 const int SONAR_CENTER_ECHO_PIN = 48;
-Ultrasonic sonarCenter(SONAR_CENTER_TRIG_PIN, SONAR_CENTER_ECHO_PIN, SONAR_TIMEOUT);
 
 // HC-SR04 Left
 const int SONAR_LEFT_TRIG_PIN = 32;
