@@ -51,7 +51,12 @@ const int BATTERY_PIN = A13;
 // ----------------------------------------------
 
 // Variables ------------------------------------
-// Motor speeds
+// Motors
+bool emergencyBrake = false;
+// Wanted motor speeds
+float leftSpeed = 0;
+float rightSpeed = 0;
+// Smoothed/real motor speeds
 float motorRightSpeed = 0;
 float motorLeftSpeed = 0;
 unsigned char motorRightFault = 0;
@@ -232,19 +237,43 @@ void checkBattery()
   }
 }
 
-void motorSpeed(int speedLeft, int speedRight)
+/*
+setMotorsSpeed set wanted speeds to a certain value.
+*/
+void setMotorsSpeed(int left, int right)
 {
-  unsigned long TaC = millis() - lastSetMotorSpeedTime; // sampling time in millis
-  lastSetMotorSpeedTime = millis();
-  if (TaC > 1000)
-    TaC = 1;
+  leftSpeed = left;
+  rightSpeed = right;
+}
 
-  // Assert that speeds are not above limit
-  speedLeft = constrain(speedLeft, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
-  speedRight = constrain(speedRight, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
+/*
+adjustMotorsSpeed smoothly adjust the motors speeds to the wanted speeds.
+If emergencyBrake is true, abruptly set all speeds to 0.
+*/
+void adjustMotorsSpeed()
+{
+  if (emergencyBrake)
+  {
+    motorLeftSpeed = 0;
+    motorRightSpeed = 0;
+    leftSpeed = 0;
+    rightSpeed = 0;
+    emergencyBrake = false;
+  }
+  else
+  {
+    unsigned long TaC = millis() - lastSetMotorSpeedTime; // sampling time in millis
+    lastSetMotorSpeedTime = millis();
+    if (TaC > 1000)
+      TaC = 1;
 
-  motorLeftSpeed += TaC * (speedLeft - motorLeftSpeed) / MOTOR_ACCELERATION;
-  motorRightSpeed += TaC * (speedRight - motorRightSpeed) / MOTOR_ACCELERATION;
+    // Assert that speeds are not above limit
+    leftSpeed = constrain(leftSpeed, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
+    rightSpeed = constrain(rightSpeed, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
+
+    motorLeftSpeed += TaC * (leftSpeed - motorLeftSpeed) / MOTOR_ACCELERATION;
+    motorRightSpeed += TaC * (rightSpeed - motorRightSpeed) / MOTOR_ACCELERATION;
+  }
 
   md.setSpeeds(motorLeftSpeed, motorRightSpeed);
 
@@ -304,6 +333,7 @@ void loop()
   checkBattery();
   checkBumper();
   checkSonar();
+  adjustMotorsSpeed();
 
   criticalDistSonar = sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE;
   minDistSonar = sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE;
@@ -315,36 +345,32 @@ void loop()
 
   if (motorLeftFault || motorRightFault)
   {
-    motorSpeed(0, 0);
+    setMotorsSpeed(0, 0);
     digitalWrite(MOW_MOTOR_PIN, HIGH);
     flashLED(LED_PIN, 1000);
     printDebug("One of the motor has a fault!!!");
   }
   else if (batteryLevel < 20)
   {
-    motorSpeed(0, 0);
+    setMotorsSpeed(0, 0);
     digitalWrite(MOW_MOTOR_PIN, HIGH);
     flashLED(LED_PIN, 3000);
     printDebug("Battery below 20%, stopping all motors and activate LED.");
   }
   else if (reverseAndTurn)
   {
-    if (stopStoppingTime > millis())
-    {
-      md.setSpeeds(0, 0);
-    }
-    else if (stopReverseTime > millis())
+    if (stopReverseTime > millis())
     {
       printDebug("reversing…");
-      motorSpeed(-50, -50);
+      setMotorsSpeed(-50, -50);
     }
     else if (stopTurnTime > millis())
     {
       printDebug("turning…");
       if (sonarLeftDist < SONAR_MIN_DISTANCE)
-        motorSpeed(50, -50);
+        setMotorsSpeed(50, -50);
       else
-        motorSpeed(-50, 50);
+        setMotorsSpeed(-50, 50);
     }
     else
     {
@@ -355,9 +381,9 @@ void loop()
   else if (bumperState)
   {
     printDebug("Bumper has touched, stop all motors and engaging reverse and turn");
+    emergencyBrake = true;
     reverseAndTurn = true;
-    stopStoppingTime = millis() + 3000;
-    stopReverseTime = stopStoppingTime + REVERSE_TIME;
+    stopReverseTime = millis() + REVERSE_TIME;
     stopTurnTime = stopReverseTime + TURN_TIME;
   }
   else if (criticalDistSonar)
@@ -373,25 +399,25 @@ void loop()
     if (sonarLeftDist < SONAR_MIN_DISTANCE)
     {
       if (sonarCenterDist < SONAR_MIN_DISTANCE)
-        motorSpeed(50, 10); // Turn Right
+        setMotorsSpeed(50, 10); // Turn Right
       else
-        motorSpeed(35, 10); // Turn slightly
+        setMotorsSpeed(35, 10); // Turn slightly
     }
     else if (sonarRightDist < SONAR_MIN_DISTANCE)
     {
       if (sonarCenterDist < SONAR_MIN_DISTANCE)
-        motorSpeed(10, 50); // Turn Left
+        setMotorsSpeed(10, 50); // Turn Left
       else
-        motorSpeed(10, 35); // Turn slighlty
+        setMotorsSpeed(10, 35); // Turn slighlty
     }
     else // Only on the center
     {
-      motorSpeed(50, 50);
+      setMotorsSpeed(50, 50);
     }
   }
   else
   {
     printDebug("Straight Forward Captain!");
-    motorSpeed(400, 400);
+    setMotorsSpeed(400, 400);
   }
 }
