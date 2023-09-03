@@ -2,10 +2,10 @@
 #include "Ultrasonic.h"
 
 // Constants ------------------------------------
-const bool DEBUG = false;                 // activate logs
+const bool DEBUG = true;                 // activate logs
 const float MOTOR_MAX_SPEED = 400;        // motor max speed, given by DualVNH5019MotorShield library
 const float SONAR_TIMEOUT = 10000UL;      // 10ms to get approx 1.7m of range
-const float SONAR_MIN_DISTANCE = 60;      // 60cm
+const float SONAR_MIN_DISTANCE = 80;      // 80cm
 const float SONAR_CRITICAL_DISTANCE = 21; // 21cm
 const float MOTOR_ACCELERATION = 1000;    // hypothetic value given by ardumower project
 // ----------------------------------------------
@@ -40,7 +40,7 @@ const int MOW_MOTOR_PIN = 40;
 
 // Battery
 const int BATTERY_PIN = A13;
-const float BATTERY_MIN_VOLTAGE = 1;
+const float BATTERY_MIN_VOLTAGE = 0.5;
 const float BATTERY_MAX_VOLTAGE = 5;
 // ----------------------------------------------
 
