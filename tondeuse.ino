@@ -2,12 +2,14 @@
 #include "Ultrasonic.h"
 
 // Constants ------------------------------------
-const bool DEBUG = false;             // activate overall logs (could be overwhelming)
-const bool DEBUG_BUMPER = false;      // activate bumper logs
-const bool DEBUG_SONAR = false;       // activate sonar logs
-const bool DEBUG_BATTERY = false;     // activate battery logs
-const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
-const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
+const bool DEBUG = false;                 // activate overall logs (could be overwhelming)
+const bool DEBUG_BUMPER = false;          // activate bumper logs
+const bool DEBUG_SONAR = false;           // activate sonar logs
+const bool DEBUG_BATTERY = false;         // activate battery logs
+const bool DEBUG_MOTOR_SPEED = false;     // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
+const float MOTOR_MAX_SPEED = 400;        // motor max speed, given by DualVNH5019MotorShield library
+const float REVERSE_TIME = 3000;          // Time to have motors in reverse mode
+const float TURN_TIME = 3000;             // Time to have motor inversed to turn
 const float SONAR_TIMEOUT = 10000UL;      // 10ms to get approx 1.7m of range
 const float SONAR_MIN_DISTANCE = 80;      // 80cm at that sonar range, motor will slow down
 const float SONAR_CRITICAL_DISTANCE = 21; // 21cm at that sonar range, the mower will reverse and then turn
@@ -67,15 +69,21 @@ float batteryLevel = 100;
 // ----------------------------------------------
 
 // Next Time ------------------------------------
-unsigned int nextTimeSonar = 0;
-unsigned int nextTimeBattery = 0;
-unsigned int nextTimeBumper = 0;
-unsigned int nextTimeMotorFault = 0;
-unsigned int nextTimeFlashLed = 0;
-unsigned int lastSetMotorSpeedTime = 0;
+unsigned int nextTimeSonar = 0;         // Next time we check sonars
+unsigned int nextTimeBattery = 0;       // Next time we check battery level
+unsigned int nextTimeBumper = 0;        // Next time we check bumper
+unsigned int nextTimeMotorFault = 0;    // Next time we check motor faults using DualVNH5019MotorShield lib
+unsigned int nextTimeFlashLed = 0;      // Next time we flash the led
+unsigned int lastSetMotorSpeedTime = 0; // The last time we updated motors speeds (used in new speed equation)
+unsigned int stopReverseTime = 0;       // Time after which the mower should stop reverse
+unsigned int stopTurnTime = 0;          // Time after which the mower should stop turn
+int senSonarTurn = 0;                   // Next sonar we check (circle between center, left and right)
+int senMotorFaultTurn = 0;              // Next motor we check for fault (circle between m1 and m2)
+// ----------------------------------------------
 
-int senSonarTurn = 0;
-int senMotorFaultTurn = 0;
+// Behavior--------------------------------------
+bool reverseAndTurn = false; // If true, the mower will engage a reverse and turn.
+// ----------------------------------------------
 
 // Helpers --------------------------------------
 void printDebug(String msg)
@@ -315,11 +323,26 @@ void loop()
     flashLED(LED_PIN, 3000);
     printDebug("Battery below 20%, stopping all motors and activate LED.");
   }
+  else if (reverseAndTurn)
+  {
+    if (stopReverseTime > millis())
+      motorSpeed(-50, -50);
+    else if (stopTurnTime > millis())
+    {
+      if (sonarLeftDist < SONAR_MIN_DISTANCE)
+        motorSpeed(50, -50);
+      else
+        motorSpeed(-50, 50);
+    }
+    else
+      reverseAndTurn = false;
+  }
   else if (criticalDistSonar || bumperState)
   {
-    // printDebug("Obstacle in critical zone");
-    motorSpeed(-50, -50);
-    // TODO: Reculer et tourner dans le sens inverse de l'obstacle.
+    printDebug("Obstacle in critical zone, engaging reverse and turn");
+    reverseAndTurn = true;
+    stopReverseTime = millis() + REVERSE_TIME;
+    stopTurnTime = stopReverseTime + TURN_TIME;
   }
   // Obstacle near anywhere
   else if (minDistSonar)
