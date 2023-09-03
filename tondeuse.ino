@@ -69,16 +69,16 @@ float batteryLevel = 100;
 // ----------------------------------------------
 
 // Next Time ------------------------------------
-unsigned int nextTimeSonar = 0;         // Next time we check sonars
-unsigned int nextTimeBattery = 0;       // Next time we check battery level
-unsigned int nextTimeBumper = 0;        // Next time we check bumper
-unsigned int nextTimeMotorFault = 0;    // Next time we check motor faults using DualVNH5019MotorShield lib
-unsigned int nextTimeFlashLed = 0;      // Next time we flash the led
-unsigned int lastSetMotorSpeedTime = 0; // The last time we updated motors speeds (used in new speed equation)
-unsigned int stopReverseTime = 0;       // Time after which the mower should stop reverse
-unsigned int stopTurnTime = 0;          // Time after which the mower should stop turn
-int senSonarTurn = 0;                   // Next sonar we check (circle between center, left and right)
-int senMotorFaultTurn = 0;              // Next motor we check for fault (circle between m1 and m2)
+unsigned long nextTimeSonar = 0;         // Next time we check sonars
+unsigned long nextTimeBattery = 0;       // Next time we check battery level
+unsigned long nextTimeBumper = 0;        // Next time we check bumper
+unsigned long nextTimeMotorFault = 0;    // Next time we check motor faults using DualVNH5019MotorShield lib
+unsigned long nextTimeFlashLed = 0;      // Next time we flash the led
+unsigned long lastSetMotorSpeedTime = 0; // The last time we updated motors speeds (used in new speed equation)
+unsigned long stopReverseTime = 0;       // Time after which the mower should stop reverse
+unsigned long stopTurnTime = 0;          // Time after which the mower should stop turn
+int senSonarTurn = 0;                    // Next sonar we check (circle between center, left and right)
+int senMotorFaultTurn = 0;               // Next motor we check for fault (circle between m1 and m2)
 // ----------------------------------------------
 
 // Behavior--------------------------------------
