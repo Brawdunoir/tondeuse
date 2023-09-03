@@ -333,7 +333,7 @@ void loop()
     {
       md.setSpeeds(0, 0);
     }
-    if (stopReverseTime > millis())
+    else if (stopReverseTime > millis())
     {
       printDebug("reversing…");
       motorSpeed(-50, -50);
