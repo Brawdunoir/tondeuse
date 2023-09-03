@@ -77,6 +77,7 @@ unsigned long nextTimeMotorFault = 0;    // Next time we check motor faults usin
 unsigned long nextTimeFlashLed = 0;      // Next time we flash the led
 unsigned long nextPrintDebug = 0;        // Next time we print logs
 unsigned long lastSetMotorSpeedTime = 0; // The last time we updated motors speeds (used in new speed equation)
+unsigned long stopStoppingTime = 0;      // Time given so the mower can stop during a reverseAndTurn
 unsigned long stopReverseTime = 0;       // Time after which the mower should stop reverse
 unsigned long stopTurnTime = 0;          // Time after which the mower should stop turn
 int senSonarTurn = 0;                    // Next sonar we check (circle between center, left and right)
@@ -328,6 +329,10 @@ void loop()
   }
   else if (reverseAndTurn)
   {
+    if (stopStoppingTime > millis())
+    {
+      md.setSpeeds(0, 0);
+    }
     if (stopReverseTime > millis())
     {
       printDebug("reversing…");
@@ -350,9 +355,9 @@ void loop()
   else if (bumperState)
   {
     printDebug("Bumper has touched, stop all motors and engaging reverse and turn");
-    md.setSpeeds(0, 0);
     reverseAndTurn = true;
-    stopReverseTime = millis() + REVERSE_TIME;
+    stopStoppingTime = millis() + 3000;
+    stopReverseTime = stopStoppingTime + REVERSE_TIME;
     stopTurnTime = stopReverseTime + TURN_TIME;
   }
   else if (criticalDistSonar)
@@ -386,7 +391,7 @@ void loop()
   }
   else
   {
-    // printDebug("Straight Forward Captain!");
+    printDebug("Straight Forward Captain!");
     motorSpeed(400, 400);
   }
 }
