@@ -56,6 +56,8 @@ bool bumperState = false;
 
 // Sonar
 long sonarCenterDist, sonarLeftDist, sonarRightDist;
+bool criticalDistSonar = false;
+bool minDistSonar = false;
 
 // Battery
 float batteryLevel = 100;
@@ -290,8 +292,8 @@ void loop()
   checkBumper();
   checkSonar();
 
-  bool criticalDistSonar = sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE;
-  bool minDistSonar = sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE;
+  criticalDistSonar = sonarCenterDist < SONAR_CRITICAL_DISTANCE || sonarLeftDist < SONAR_CRITICAL_DISTANCE || sonarRightDist < SONAR_CRITICAL_DISTANCE;
+  minDistSonar = sonarCenterDist < SONAR_MIN_DISTANCE || sonarLeftDist < SONAR_MIN_DISTANCE || sonarRightDist < SONAR_MIN_DISTANCE;
 
   if (DEBUG)
   {
