@@ -2,21 +2,23 @@
 #include "Ultrasonic.h"
 
 // Constants ------------------------------------
-const bool DEBUG = false;                 // activate overall logs (could be overwhelming)
-const bool DEBUG_LOGS = false;            // activate printed logs for states (could be overwhelming)
-const bool DEBUG_BUMPER = false;          // activate bumper logs
-const bool DEBUG_SONAR = false;           // activate sonar logs
-const bool DEBUG_BATTERY = false;         // activate battery logs
-const bool DEBUG_MOTOR_SPEED = false;     // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
-const float MOTOR_MAX_SPEED = 400;        // motor max speed, given by DualVNH5019MotorShield library
-const float REVERSE_TIME = 5500;          // Time to have motors in reverse mode
-const float TURN_TIME = 4500;             // Time to have motor inversed to turn
-const float SONAR_TIMEOUT = 10000UL;      // 10ms to get approx 1.7m of range
-const float SONAR_MIN_DISTANCE = 40;      // sonar range, motor will slow down
-const float SONAR_CRITICAL_DISTANCE = 21; // sonar range, the mower will reverse and then turn
-const float MOTOR_ACCELERATION = 800;     // 1000 is hypothetic value given by ardumower project
-const float BATTERY_MIN_VOLTAGE = 0.5;    // Battery minimum voltage
-const float BATTERY_MAX_VOLTAGE = 5;      // Battery maximum voltage
+const bool DEBUG = false;                   // activate overall logs (could be overwhelming)
+const bool DEBUG_LOGS = false;              // activate printed logs for states (could be overwhelming)
+const bool DEBUG_BUMPER = false;            // activate bumper logs
+const bool DEBUG_SONAR = false;             // activate sonar logs
+const bool DEBUG_BATTERY = false;           // activate battery logs
+const bool DEBUG_MOTOR_SPEED = false;       // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
+const float MOTOR_MAX_SPEED = 400;          // motor max speed, given by DualVNH5019MotorShield library
+const float REVERSE_TIME = 5500;            // Time to have motors in reverse mode
+const float TURN_TIME = 4500;               // Time to have motor inversed to turn
+const float SONAR_TIMEOUT = 10000UL;        // 10ms to get approx 1.7m of range
+const float SONAR_MIN_DISTANCE = 50;        // sonar range, motor will slow down
+const float SONAR_CRITICAL_DISTANCE = 21;   // sonar range, the mower will reverse and then turn
+const float REVERSE_AND_TURN_SPEED = 100;   // motor speed when reversing and turning
+const float OBSTACLE_AVOIDANCE_SPEED = 100; // motor speed when avoiding obstacle
+const float MOTOR_ACCELERATION = 800;       // 1000 is hypothetic value given by ardumower project
+const float BATTERY_MIN_VOLTAGE = 0.5;      // Battery minimum voltage
+const float BATTERY_MAX_VOLTAGE = 5;        // Battery maximum voltage
 // ----------------------------------------------
 
 // Pins -----------------------------------------
@@ -375,15 +377,15 @@ void loop()
     if (stopReverseTime > millis())
     {
       printDebug("reversing…");
-      setMotorsSpeed(-50, -50);
+      setMotorsSpeed(-REVERSE_AND_TURN_SPEED, -REVERSE_AND_TURN_SPEED);
     }
     else if (stopTurnTime > millis())
     {
       printDebug("turning…");
       if (sonarLeftDist < SONAR_MIN_DISTANCE)
-        setMotorsSpeed(50, -50);
+        setMotorsSpeed(REVERSE_AND_TURN_SPEED, -REVERSE_AND_TURN_SPEED);
       else
-        setMotorsSpeed(-50, 50);
+        setMotorsSpeed(-REVERSE_AND_TURN_SPEED, REVERSE_AND_TURN_SPEED);
     }
     else
     {
@@ -409,28 +411,44 @@ void loop()
   // Obstacle near anywhere
   else if (minDistSonar)
   {
+    float leftSpeed = 0;
+    float rightSpeed = 0;
     if (sonarLeftDist < SONAR_MIN_DISTANCE)
     {
-      if (sonarCenterDist < SONAR_MIN_DISTANCE)
-        setMotorsSpeed(50, 10); // Turn Right
-      else
-        setMotorsSpeed(35, 10); // Turn slightly
+      if (sonarCenterDist < SONAR_MIN_DISTANCE) // Turn right
+      {
+        leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
+        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / 5;
+      }
+      else // Turn slightly less
+      {
+        leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
+        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / 2;
+      }
     }
     else if (sonarRightDist < SONAR_MIN_DISTANCE)
     {
-      if (sonarCenterDist < SONAR_MIN_DISTANCE)
-        setMotorsSpeed(10, 50); // Turn Left
-      else
-        setMotorsSpeed(10, 35); // Turn slighlty
+      if (sonarCenterDist < SONAR_MIN_DISTANCE) // Turn left
+      {
+        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / 5;
+        rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
+      }
+      else // Turn slightly less
+      {
+        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / 2;
+        rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
+      }
     }
     else // Only on the center
     {
-      setMotorsSpeed(50, 50);
+      leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
+      rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
     }
+    setMotorsSpeed(leftSpeed, rightSpeed);
   }
   else
   {
     printDebug("Straight Forward Captain!");
-    setMotorsSpeed(400, 400);
+    setMotorsSpeed(MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
   }
 }
