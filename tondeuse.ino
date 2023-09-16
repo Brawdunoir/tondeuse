@@ -2,22 +2,23 @@
 #include "Ultrasonic.h"
 
 // Constants ------------------------------------
-const bool DEBUG = false;                   // activate overall logs (could be overwhelming)
-const bool DEBUG_LOGS = false;              // activate printed logs for states (could be overwhelming)
-const bool DEBUG_BUMPER = false;            // activate bumper logs
-const bool DEBUG_SONAR = false;             // activate sonar logs
-const bool DEBUG_BATTERY = false;           // activate battery logs
-const bool DEBUG_MOTOR_SPEED = false;       // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
-const float MOTOR_MAX_SPEED = 400;          // motor max speed, given by DualVNH5019MotorShield library
-const float REVERSE_TIME = 5500;            // Time to have motors in reverse mode
-const float TURN_TIME = 4500;               // Time to have motor inversed to turn
+const bool DEBUG = false;             // activate overall logs (could be overwhelming)
+const bool DEBUG_LOGS = false;        // activate printed logs for states (could be overwhelming)
+const bool DEBUG_BUMPER = false;      // activate bumper logs
+const bool DEBUG_SONAR = false;       // activate sonar logs
+const bool DEBUG_BATTERY = false;     // activate battery logs
+const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
+const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
+const float STOP_TIME = 1000;
+const float REVERSE_TIME = 3000;            // Time to have motors in reverse mode
+const float TURN_TIME = 1200;               // Time to have motor inversed to turn
 const float SONAR_TIMEOUT = 10000UL;        // 10ms to get approx 1.7m of range
-const float SONAR_MIN_DISTANCE = 50;        // sonar range, motor will slow down
+const float SONAR_MIN_DISTANCE = 40;        // sonar range, motor will slow down
 const float SONAR_CRITICAL_DISTANCE = 21;   // sonar range, the mower will reverse and then turn
-const float REVERSE_AND_TURN_SPEED = 100;   // motor speed when reversing and turning
-const float OBSTACLE_AVOIDANCE_SPEED = 100; // motor speed when avoiding obstacle
-const float MOTOR_ACCELERATION = 800;       // 1000 is hypothetic value given by ardumower project
-const float BATTERY_MIN_VOLTAGE = 0.5;      // Battery minimum voltage
+const float REVERSE_AND_TURN_SPEED = 350;   // motor speed when reversing and turning
+const float OBSTACLE_AVOIDANCE_SPEED = 350; // motor speed when avoiding obstacle
+const float MOTOR_ACCELERATION = 800;       // +=-/1000 is hypothetic value given by ardumower project
+const float BATTERY_MIN_VOLTAGE = 1;        // Battery minimum voltage
 const float BATTERY_MAX_VOLTAGE = 5;        // Battery maximum voltage
 // ----------------------------------------------
 
@@ -93,6 +94,7 @@ int senMotorFaultTurn = 0;               // Next motor we check for fault (circl
 
 // Behavior--------------------------------------
 bool reverseAndTurn = false; // If true, the mower will engage a reverse and turn.
+bool shoudTurnLeft = false;
 // ----------------------------------------------
 
 // Helpers --------------------------------------
@@ -374,7 +376,12 @@ void loop()
   }
   else if (reverseAndTurn)
   {
-    if (stopReverseTime > millis())
+    if (stopStoppingTime > millis())
+    {
+      printDebug("stopping…");
+      emergencyBrake = true;
+    }
+    else if (stopReverseTime > millis())
     {
       printDebug("reversing…");
       setMotorsSpeed(-REVERSE_AND_TURN_SPEED, -REVERSE_AND_TURN_SPEED);
@@ -382,7 +389,7 @@ void loop()
     else if (stopTurnTime > millis())
     {
       printDebug("turning…");
-      if (sonarLeftDist < SONAR_MIN_DISTANCE)
+      if (shoudTurnLeft)
         setMotorsSpeed(REVERSE_AND_TURN_SPEED, -REVERSE_AND_TURN_SPEED);
       else
         setMotorsSpeed(-REVERSE_AND_TURN_SPEED, REVERSE_AND_TURN_SPEED);
@@ -393,21 +400,26 @@ void loop()
       reverseAndTurn = false;
     }
   }
-  else if (bumperState)
+  else if (bumperState || criticalDistSonar)
   {
     printDebug("Bumper has touched, stop all motors and engaging reverse and turn");
-    emergencyBrake = true;
     reverseAndTurn = true;
-    stopReverseTime = millis() + REVERSE_TIME;
+    if (sonarRightDist < SONAR_CRITICAL_DISTANCE)
+      shoudTurnLeft = false;
+    else
+      shoudTurnLeft = true;
+    stopStoppingTime = millis() + STOP_TIME;
+    stopReverseTime = stopStoppingTime + REVERSE_TIME;
     stopTurnTime = stopReverseTime + TURN_TIME;
   }
-  else if (criticalDistSonar)
-  {
-    printDebug("Obstacle in critical zone, engaging reverse and turn");
-    reverseAndTurn = true;
-    stopReverseTime = millis() + REVERSE_TIME;
-    stopTurnTime = stopReverseTime + TURN_TIME;
-  }
+  // else if (criticalDistSonar)
+  // {
+  //   printDebug("Obstacle in critical zone, engaging reverse and turn");
+  //   reverseAndTurn = true;
+  //   stopStoppingTime = millis() + STOP_TIME;
+  //   stopReverseTime = stopStoppingTime + REVERSE_TIME;
+  //   stopTurnTime = stopReverseTime + TURN_TIME;
+  // }
   // Obstacle near anywhere
   else if (minDistSonar)
   {
