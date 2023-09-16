@@ -10,15 +10,17 @@ const bool DEBUG_BATTERY = false;     // activate battery logs
 const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
 const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
 const float STOP_TIME = 1000;
-const float REVERSE_TIME = 3000;             // Time to have motors in reverse mode
-const float TURN_TIME = 1200;                // Time to have motor inversed to turn
+const float REVERSE_TIME = 2500;             // Time to have motors in reverse mode
+const float TURN_TIME = 1000;                // Time to have motor inversed to turn
 const float SONAR_TIMEOUT = 10000UL;         // 10ms to get approx 1.7m of range
 const float SONAR_SIDE_DISTANCE_SLOW = 50;   // sonar range, motor will slow down
 const float SONAR_CENTER_DISTANCE_SLOW = 60; // sonar range, motor will slow down
 const float SONAR_SIDE_DISTANCE_STOP = 10;   // sonar range, the mower will reverse and then turn
 const float SONAR_CENTER_DISTANCE_STOP = 21; // sonar range, the mower will reverse and then turn
-const float REVERSE_AND_TURN_SPEED = 350;    // motor speed when reversing and turning
-const float OBSTACLE_AVOIDANCE_SPEED = 200;  // motor speed when avoiding obstacle
+const float REVERSE_AND_TURN_SPEED = 400;    // motor speed when reversing and turning
+const float OBSTACLE_AVOIDANCE_SPEED = 300;  // motor speed when avoiding obstacle
+const float HIGH_TURN_DIVISION = 10.0;       // Divise the motor speed of the other wheel by this value
+const float LOW_TURN_DIVISION = 2.0;         // Divise the motor speed of the other wheel by this value
 const float MOTOR_ACCELERATION = 800;        // +=-/1000 is hypothetic value given by ardumower project
 const float BATTERY_MIN_VOLTAGE = 1;         // Battery minimum voltage
 const float BATTERY_MAX_VOLTAGE = 5;         // Battery maximum voltage
@@ -432,24 +434,24 @@ void loop()
       if (sonarCenterDist < SONAR_CENTER_DISTANCE_SLOW) // Turn right
       {
         leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
-        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / 10;
+        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / HIGH_TURN_DIVISION;
       }
       else // Turn slightly less
       {
         leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
-        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / 2;
+        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / LOW_TURN_DIVISION;
       }
     }
     else if (sonarRightDist < SONAR_SIDE_DISTANCE_SLOW)
     {
       if (sonarCenterDist < SONAR_CENTER_DISTANCE_SLOW) // Turn left
       {
-        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / 10;
+        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / HIGH_TURN_DIVISION;
         rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
       }
       else // Turn slightly less
       {
-        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / 2;
+        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / LOW_TURN_DIVISION;
         rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
       }
     }
