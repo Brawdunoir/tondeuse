@@ -10,16 +10,18 @@ const bool DEBUG_BATTERY = false;     // activate battery logs
 const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
 const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
 const float STOP_TIME = 1000;
-const float REVERSE_TIME = 3000;            // Time to have motors in reverse mode
-const float TURN_TIME = 1200;               // Time to have motor inversed to turn
-const float SONAR_TIMEOUT = 10000UL;        // 10ms to get approx 1.7m of range
-const float SONAR_MIN_DISTANCE = 40;        // sonar range, motor will slow down
-const float SONAR_CRITICAL_DISTANCE = 21;   // sonar range, the mower will reverse and then turn
-const float REVERSE_AND_TURN_SPEED = 350;   // motor speed when reversing and turning
-const float OBSTACLE_AVOIDANCE_SPEED = 350; // motor speed when avoiding obstacle
-const float MOTOR_ACCELERATION = 800;       // +=-/1000 is hypothetic value given by ardumower project
-const float BATTERY_MIN_VOLTAGE = 1;        // Battery minimum voltage
-const float BATTERY_MAX_VOLTAGE = 5;        // Battery maximum voltage
+const float REVERSE_TIME = 3000;             // Time to have motors in reverse mode
+const float TURN_TIME = 1200;                // Time to have motor inversed to turn
+const float SONAR_TIMEOUT = 10000UL;         // 10ms to get approx 1.7m of range
+const float SONAR_SIDE_DISTANCE_SLOW = 50;   // sonar range, motor will slow down
+const float SONAR_CENTER_DISTANCE_SLOW = 60; // sonar range, motor will slow down
+const float SONAR_SIDE_DISTANCE_STOP = 10;   // sonar range, the mower will reverse and then turn
+const float SONAR_CENTER_DISTANCE_STOP = 21; // sonar range, the mower will reverse and then turn
+const float REVERSE_AND_TURN_SPEED = 350;    // motor speed when reversing and turning
+const float OBSTACLE_AVOIDANCE_SPEED = 200;  // motor speed when avoiding obstacle
+const float MOTOR_ACCELERATION = 800;        // +=-/1000 is hypothetic value given by ardumower project
+const float BATTERY_MIN_VOLTAGE = 1;         // Battery minimum voltage
+const float BATTERY_MAX_VOLTAGE = 5;         // Battery maximum voltage
 // ----------------------------------------------
 
 // Pins -----------------------------------------
@@ -70,8 +72,8 @@ bool bumperState = false;
 
 // Sonar
 long sonarCenterDist, sonarLeftDist, sonarRightDist;
-bool criticalDistSonar = false;
-bool minDistSonar = false;
+bool stopDistSonar = false;
+bool slowDistSonar = false;
 
 // Battery
 float batteryLevel = 100;
@@ -180,8 +182,8 @@ void checkSonar()
       senSonarTurn = 0;
     }
 
-    criticalDistSonar = inRange(SONAR_CRITICAL_DISTANCE);
-    minDistSonar = inRange(SONAR_MIN_DISTANCE);
+    stopDistSonar = inRange(SONAR_SIDE_DISTANCE_STOP, SONAR_CENTER_DISTANCE_STOP);
+    slowDistSonar = inRange(SONAR_SIDE_DISTANCE_SLOW, SONAR_CENTER_DISTANCE_SLOW);
   }
 }
 
@@ -298,12 +300,12 @@ inRange returns true if an obstacle is in the range of one of the sonars.
 It returns false systematically if one of the distance is 0.
 Indeed, before a sonar is queried its distance is 0 so it'll be a false positive.
 */
-bool inRange(int range)
+bool inRange(int sideRange, int centerRange)
 {
   if (!sonarCenterDist || !sonarRightDist || !sonarLeftDist)
     return false;
 
-  return sonarCenterDist < range || sonarLeftDist < range || sonarRightDist < range;
+  return sonarCenterDist < centerRange || sonarLeftDist < sideRange || sonarRightDist < sideRange;
 }
 // ----------------------------------------------
 
@@ -400,11 +402,11 @@ void loop()
       reverseAndTurn = false;
     }
   }
-  else if (bumperState || criticalDistSonar)
+  else if (bumperState || stopDistSonar)
   {
     printDebug("Bumper has touched, stop all motors and engaging reverse and turn");
     reverseAndTurn = true;
-    if (sonarRightDist < SONAR_CRITICAL_DISTANCE)
+    if (sonarRightDist < SONAR_SIDE_DISTANCE_STOP)
       shoudTurnLeft = false;
     else
       shoudTurnLeft = true;
@@ -412,7 +414,7 @@ void loop()
     stopReverseTime = stopStoppingTime + REVERSE_TIME;
     stopTurnTime = stopReverseTime + TURN_TIME;
   }
-  // else if (criticalDistSonar)
+  // else if (stopDistSonar)
   // {
   //   printDebug("Obstacle in critical zone, engaging reverse and turn");
   //   reverseAndTurn = true;
@@ -421,16 +423,16 @@ void loop()
   //   stopTurnTime = stopReverseTime + TURN_TIME;
   // }
   // Obstacle near anywhere
-  else if (minDistSonar)
+  else if (slowDistSonar)
   {
     float leftSpeed = 0;
     float rightSpeed = 0;
-    if (sonarLeftDist < SONAR_MIN_DISTANCE)
+    if (sonarLeftDist < SONAR_SIDE_DISTANCE_SLOW)
     {
-      if (sonarCenterDist < SONAR_MIN_DISTANCE) // Turn right
+      if (sonarCenterDist < SONAR_CENTER_DISTANCE_SLOW) // Turn right
       {
         leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
-        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / 5;
+        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / 10;
       }
       else // Turn slightly less
       {
@@ -438,11 +440,11 @@ void loop()
         rightSpeed = OBSTACLE_AVOIDANCE_SPEED / 2;
       }
     }
-    else if (sonarRightDist < SONAR_MIN_DISTANCE)
+    else if (sonarRightDist < SONAR_SIDE_DISTANCE_SLOW)
     {
-      if (sonarCenterDist < SONAR_MIN_DISTANCE) // Turn left
+      if (sonarCenterDist < SONAR_CENTER_DISTANCE_SLOW) // Turn left
       {
-        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / 5;
+        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / 10;
         rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
       }
       else // Turn slightly less
