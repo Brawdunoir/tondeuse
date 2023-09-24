@@ -5,7 +5,7 @@ class Battery
 {
 public:
   Battery(int pin, float minVoltage = 1, float maxVoltage = 5);
-  float getLevel();
+  int getLevel();
   void update();
 
 private:

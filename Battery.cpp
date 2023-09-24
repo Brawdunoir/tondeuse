@@ -1,4 +1,5 @@
 #include "Battery.h"
+#include <Arduino.h>
 
 Battery::Battery(int pin, float minV, float maxV)
     : pin(pin), level(100), minVoltage(minV), maxVoltage(maxV)
@@ -8,7 +9,7 @@ Battery::Battery(int pin, float minV, float maxV)
 
 int Battery::getLevel()
 {
-  return batteryLevel;
+  return level;
 }
 
 void Battery::update()
