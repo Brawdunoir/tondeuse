@@ -1,12 +1,14 @@
 #include <DualVNH5019MotorShield.h>
 #include "Ultrasonic.h"
 
+#include "Battery.h"
+
 // Constants ------------------------------------
-const bool DEBUG = false;             // activate overall logs (could be overwhelming)
-const bool DEBUG_LOGS = false;        // activate printed logs for states (could be overwhelming)
-const bool DEBUG_BUMPER = false;      // activate bumper logs
-const bool DEBUG_SONAR = false;       // activate sonar logs
-const bool DEBUG_BATTERY = false;     // activate battery logs
+const bool DEBUG = false;        // activate overall logs (could be overwhelming)
+const bool DEBUG_LOGS = false;   // activate printed logs for states (could be overwhelming)
+const bool DEBUG_BUMPER = false; // activate bumper logs
+const bool DEBUG_SONAR = false;  // activate sonar logs
+// const bool DEBUG_BATTERY = false;     // activate battery logs
 const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
 const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
 const float STOP_TIME = 1000;
@@ -22,8 +24,6 @@ const float OBSTACLE_AVOIDANCE_SPEED = 300;  // motor speed when avoiding obstac
 const float HIGH_TURN_DIVISION = 10.0;       // Divise the motor speed of the other wheel by this value
 const float LOW_TURN_DIVISION = 2.0;         // Divise the motor speed of the other wheel by this value
 const float MOTOR_ACCELERATION = 800;        // +=-/1000 is hypothetic value given by ardumower project
-const float BATTERY_MIN_VOLTAGE = 1;         // Battery minimum voltage
-const float BATTERY_MAX_VOLTAGE = 5;         // Battery maximum voltage
 // ----------------------------------------------
 
 // Pins -----------------------------------------
@@ -54,7 +54,7 @@ DualVNH5019MotorShield md; // Use default pins
 const int MOW_MOTOR_PIN = 40;
 
 // Battery
-const int BATTERY_PIN = A13;
+Battery battery(A13);
 // ----------------------------------------------
 
 // Variables ------------------------------------
@@ -76,9 +76,6 @@ bool bumperState = false;
 long sonarCenterDist, sonarLeftDist, sonarRightDist;
 bool stopDistSonar = false;
 bool slowDistSonar = false;
-
-// Battery
-float batteryLevel = 100;
 // ----------------------------------------------
 
 // Next Time ------------------------------------
@@ -234,17 +231,7 @@ void checkBattery()
   if (millis() >= nextTimeBattery)
   {
     nextTimeBattery = millis() + 60000;
-
-    float measure = analogRead(BATTERY_PIN);
-    float voltage = measure * 5.0 / 1023;
-    batteryLevel = map(voltage, BATTERY_MIN_VOLTAGE, BATTERY_MAX_VOLTAGE, 0, 100);
-    batteryLevel = constrain(batteryLevel, 0, 100);
-
-    if (DEBUG || DEBUG_BATTERY)
-    {
-      Serial.print("Battery Level: ");
-      Serial.println(batteryLevel);
-    }
+    battery.update();
   }
 }
 
@@ -371,7 +358,7 @@ void loop()
     flashLED(LED_PIN, 1000);
     printDebug("One of the motor has a fault!!!");
   }
-  else if (batteryLevel < 20)
+  else if (battery.getLevel() < 20)
   {
     setMotorsSpeed(0, 0);
     digitalWrite(MOW_MOTOR_PIN, HIGH);
