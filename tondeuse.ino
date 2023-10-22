@@ -24,6 +24,7 @@ const float OBSTACLE_AVOIDANCE_SPEED = 300;  // motor speed when avoiding obstac
 const float HIGH_TURN_DIVISION = 10.0;       // Divise the motor speed of the other wheel by this value
 const float LOW_TURN_DIVISION = 2.0;         // Divise the motor speed of the other wheel by this value
 const float MOTOR_ACCELERATION = 800;        // +=-/1000 is hypothetic value given by ardumower project
+const float MOTOR_RATIO = 1;                 // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
 // ----------------------------------------------
 
 // Pins -----------------------------------------
@@ -106,6 +107,14 @@ void printDebug(String msg)
     nextPrintDebug = millis() + 500;
     Serial.println(msg);
   }
+}
+
+void motorRatio()
+{
+  if (MOTOR_RATIO > 1)
+    leftSpeed /= MOTOR_RATIO;
+  else if (MOTOR_RATIO < 1)
+    rightSpeed *= MOTOR_RATIO;
 }
 // ----------------------------------------------
 
@@ -268,6 +277,9 @@ void adjustMotorsSpeed()
     // Assert that speeds are not above limit
     leftSpeed = constrain(leftSpeed, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
     rightSpeed = constrain(rightSpeed, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
+
+    if (leftSpeed == rightSpeed)
+      motorRatio();
 
     motorLeftSpeed += TaC * (leftSpeed - motorLeftSpeed) / MOTOR_ACCELERATION;
     motorRightSpeed += TaC * (rightSpeed - motorRightSpeed) / MOTOR_ACCELERATION;
