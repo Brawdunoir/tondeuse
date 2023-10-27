@@ -43,16 +43,16 @@ const int SONAR_RIGHT_ECHO_PIN = 26;
 Ultrasonic sonarRight(SONAR_RIGHT_TRIG_PIN, SONAR_RIGHT_ECHO_PIN, SONAR_TIMEOUT);
 
 // Bumper
-const int BUMPER_PIN = 41;
+const int BUMPER_PIN = 46;
 
 // Led
-const int LED_PIN = 3;
+const int LED_PIN = 42;
 
 // Motors
 DualVNH5019MotorShield md; // Use default pins
 
 // Motor Mow
-const int MOW_MOTOR_PIN = 40;
+const int MOW_MOTOR_PIN = 44;
 
 // Battery
 Battery battery(A13);
