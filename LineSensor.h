@@ -4,7 +4,7 @@
 class LineSensor
 {
 public:
-  LineSensor(int pin, float whiteLevel, float blackLevel);
+  LineSensor(int pin, float whiteLevel, float blackLevel, bool debug);
   bool isAboveLine();
   void update();
   float getLevel();
@@ -15,6 +15,7 @@ private:
   float blackLevel;   // Level above which there is a line
   float level;        // Actual level read
   bool isAboveLine;   // Is the sensor above a line
+  bool debug;
 };
 
 #endif
