@@ -2,12 +2,14 @@
 #include "Ultrasonic.h"
 
 #include "Battery.h"
+#include "LineSensor.h"
 
 // Constants ------------------------------------
-const bool DEBUG = false;        // activate overall logs (could be overwhelming)
-const bool DEBUG_LOGS = false;   // activate printed logs for states (could be overwhelming)
-const bool DEBUG_BUMPER = false; // activate bumper logs
-const bool DEBUG_SONAR = false;  // activate sonar logs
+const bool DEBUG = false;           // activate overall logs (could be overwhelming)
+const bool DEBUG_LOGS = false;      // activate printed logs for states (could be overwhelming)
+const bool DEBUG_BUMPER = false;    // activate bumper logs
+const bool DEBUG_SONAR = false;     // activate sonar logs
+const bool DEBUG_LINESENSOR = false // activate line sensor logs (decorrelated from overall logs)
 // const bool DEBUG_BATTERY = false;     // activate battery logs
 const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
 const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
@@ -56,6 +58,11 @@ const int MOW_MOTOR_PIN = 44;
 
 // Battery
 Battery battery(A13);
+
+// Line Sensors
+// TODO: Change pin
+LineSensor rightLineSensor(1, 400, 650, DEBUG_LINESENSOR)
+LineSensor leftLineSensor(2, 600, 750, DEBUG_LINESENSOR)
 // ----------------------------------------------
 
 // Variables ------------------------------------
