@@ -422,7 +422,7 @@ void loop()
       reverseAndTurn = false;
     }
   }
-  else if (bumperState || stopDistSonar)
+  else if (bumperState || stopDistSonar || leftLineSensor.isAboveLine() || rightLineSensor.isAboveLine())
   {
     printDebug("Bumper has touched, stop all motors and engaging reverse and turn");
     reverseAndTurn = true;
