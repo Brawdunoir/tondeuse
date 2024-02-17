@@ -89,6 +89,7 @@ bool slowDistSonar = false;
 // Next Time ------------------------------------
 unsigned long nextTimeSonar = 0;         // Next time we check sonars
 unsigned long nextTimeBattery = 0;       // Next time we check battery level
+unsigned long nextTimeLineSensor = 0;    // Next time we check line sensors
 unsigned long nextTimeBumper = 0;        // Next time we check bumper
 unsigned long nextTimeMotorFault = 0;    // Next time we check motor faults using DualVNH5019MotorShield lib
 unsigned long nextTimeFlashLed = 0;      // Next time we flash the led
@@ -251,6 +252,16 @@ void checkBattery()
   }
 }
 
+void checkLineSensor()
+{
+  if (millis() >= nextTimeLineSensor)
+  {
+    nextTimeLineSensor = millis() + 100;
+    rightLineSensor.update();
+    leftLineSensor.update();
+  }
+}
+
 /*
 setMotorsSpeed set wanted speeds to a certain value.
 */
@@ -363,6 +374,7 @@ void loop()
   checkBattery();
   checkBumper();
   checkSonar();
+  checkLineSensor();
   adjustMotorsSpeed();
 
   if (DEBUG)
