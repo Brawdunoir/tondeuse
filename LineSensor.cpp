@@ -20,7 +20,7 @@ void LineSensor::update()
   
   if (level < whiteLevel)
     aboveLine = false;
-  else if (level > blackLevel)
+  else if (level < blackLevel && level > whiteLevel)
     aboveLine = true;
 }
 

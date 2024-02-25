@@ -60,8 +60,8 @@ const int MOW_MOTOR_PIN = 44;
 Battery battery(A13);
 
 // Line Sensors
-LineSensor rightLineSensor(A11, 400, 650, DEBUG_LINESENSOR);
-LineSensor leftLineSensor(A12, 600, 750, DEBUG_LINESENSOR);
+LineSensor rightLineSensor(A11, 200, 300, DEBUG_LINESENSOR);
+LineSensor leftLineSensor(A12, 200, 300, DEBUG_LINESENSOR);
 // ----------------------------------------------
 
 // Variables ------------------------------------
