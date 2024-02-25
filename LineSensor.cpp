@@ -2,14 +2,14 @@
 #include <Arduino.h>
 
 LineSensor::LineSensor(int pin, float whiteLevel, float blackLevel, bool debug)
-    : pin(pin), level(0), isAboveLine(false), whiteLevel(whiteLevel), blackLevel(blackLevel), debug(debug)
+    : pin(pin), level(0), aboveLine(false), whiteLevel(whiteLevel), blackLevel(blackLevel), debug(debug)
 {
   pinMode(pin, INPUT);
 }
 
 bool LineSensor::isAboveLine()
 {
-  return isAboveLine;
+  return aboveLine;
 }
 
 void LineSensor::update()
@@ -19,12 +19,12 @@ void LineSensor::update()
     Serial.println(level);
   
   if (level < whiteLevel)
-    isAboveLine = false;
+    aboveLine = false;
   else if (level > blackLevel)
-    isAboveLine = true;
+    aboveLine = true;
 }
 
 float LineSensor::getLevel()
 {
-  return level
+  return level;
 }

@@ -14,7 +14,7 @@ private:
   float whiteLevel;   // Level below which there is no line
   float blackLevel;   // Level above which there is a line
   float level;        // Actual level read
-  bool isAboveLine;   // Is the sensor above a line
+  bool aboveLine;   // Is the sensor above a line
   bool debug;
 };
 
