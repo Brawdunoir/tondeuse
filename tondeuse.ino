@@ -83,6 +83,9 @@ bool bumperState = false;
 long sonarCenterDist, sonarLeftDist, sonarRightDist;
 bool stopDistSonar = false;
 bool slowDistSonar = false;
+
+// Line
+bool lineState = false;
 // ----------------------------------------------
 
 // Next Time ------------------------------------
@@ -259,6 +262,10 @@ void checkLineSensor()
     rightLineSensor.update();
     leftLineSensor.update();
   }
+  if (rightLineSensor.isAboveLine() || leftLineSensor.isAboveLine())
+    lineState = true;
+  else
+    lineState = false;
 }
 
 /*
@@ -485,7 +492,7 @@ void loop()
   {
     reverseAndTurn();
   }
-  else if (bumperState || stopDistSonar || leftLineSensor.isAboveLine() || rightLineSensor.isAboveLine())
+  else if (bumperState || stopDistSonar || lineState)
   {
     printDebug("Either the bumper has touched, the sonar is in critical zone or we are about to cross perimeter; stop all motors and preparing a reverse and turn");
     prepareReverseAndTurn();
