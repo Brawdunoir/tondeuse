@@ -27,6 +27,7 @@ const float HIGH_TURN_DIVISION = 10.0;       // Divise the motor speed of the ot
 const float LOW_TURN_DIVISION = 2.0;         // Divise the motor speed of the other wheel by this value
 const float MOTOR_ACCELERATION = 800;        // +=-/1000 is hypothetic value given by ardumower project
 const float MOTOR_RATIO = 1.1;               // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
+const float LINE_SENSOR_THRESHOLD = 200;     // Level below which there is no line
 // ----------------------------------------------
 
 // Pins -----------------------------------------
@@ -60,8 +61,8 @@ const int MOW_MOTOR_PIN = 44;
 Battery battery(A13);
 
 // Line Sensors
-LineSensor rightLineSensor(A11, 200, 300, DEBUG_LINESENSOR);
-LineSensor leftLineSensor(A12, 200, 300, DEBUG_LINESENSOR);
+LineSensor rightLineSensor(A11, LINE_SENSOR_THRESHOLD, DEBUG_LINESENSOR);
+LineSensor leftLineSensor(A12, LINE_SENSOR_THRESHOLD, DEBUG_LINESENSOR);
 // ----------------------------------------------
 
 // Variables ------------------------------------
