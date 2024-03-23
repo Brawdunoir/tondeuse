@@ -94,7 +94,7 @@ unsigned long nextTimeMotorFault = 0;    // Next time we check motor faults usin
 unsigned long nextTimeFlashLed = 0;      // Next time we flash the led
 unsigned long nextPrintDebug = 0;        // Next time we print logs
 unsigned long lastSetMotorSpeedTime = 0; // The last time we updated motors speeds (used in new speed equation)
-unsigned long stopStoppingTime = 0;      // Time given so the mower can stop during a reverseAndTurn
+unsigned long stopStoppingTime = 0;      // Time given so the mower can stop during a doReverseAndTurn
 unsigned long stopReverseTime = 0;       // Time after which the mower should stop reverse
 unsigned long stopTurnTime = 0;          // Time after which the mower should stop turn
 int senSonarTurn = 0;                    // Next sonar we check (circle between center, left and right)
@@ -102,7 +102,7 @@ int senMotorFaultTurn = 0;               // Next motor we check for fault (circl
 // ----------------------------------------------
 
 // Behavior--------------------------------------
-bool reverseAndTurn = false; // If true, the mower will engage a reverse and turn.
+bool doReverseAndTurn = false; // If true, the mower will engage a reverse and turn.
 bool shoudTurnLeft = false;
 // ----------------------------------------------
 
@@ -325,6 +325,92 @@ bool inRange(int sideRange, int centerRange)
 
   return sonarCenterDist < centerRange || sonarLeftDist < sideRange || sonarRightDist < sideRange;
 }
+
+/*
+adaptSpeed will adapt the speed of the motors if an obstacle is near.
+*/
+void adaptSpeed()
+{
+  float leftSpeed = 0;
+  float rightSpeed = 0;
+  if (sonarLeftDist < SONAR_SIDE_DISTANCE_SLOW)
+  {
+    if (sonarCenterDist < SONAR_CENTER_DISTANCE_SLOW) // Turn right
+    {
+      leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
+      rightSpeed = OBSTACLE_AVOIDANCE_SPEED / HIGH_TURN_DIVISION;
+    }
+    else // Turn slightly less
+    {
+      leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
+      rightSpeed = OBSTACLE_AVOIDANCE_SPEED / LOW_TURN_DIVISION;
+    }
+  }
+  else if (sonarRightDist < SONAR_SIDE_DISTANCE_SLOW)
+  {
+    if (sonarCenterDist < SONAR_CENTER_DISTANCE_SLOW) // Turn left
+    {
+      leftSpeed = OBSTACLE_AVOIDANCE_SPEED / HIGH_TURN_DIVISION;
+      rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
+    }
+    else // Turn slightly less
+    {
+      leftSpeed = OBSTACLE_AVOIDANCE_SPEED / LOW_TURN_DIVISION;
+      rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
+    }
+  }
+  else // Only on the center
+  {
+    leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
+    rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
+  }
+  setMotorsSpeed(leftSpeed, rightSpeed);
+}
+
+/*
+prepareReverseAndTurn will prepare the mower to reverse and turn by setting the right flags and times.
+*/
+void prepareReverseAndTurn()
+{
+  doReverseAndTurn = true;
+  if (sonarRightDist < SONAR_SIDE_DISTANCE_STOP)
+    shoudTurnLeft = false;
+  else
+    shoudTurnLeft = true;
+  stopStoppingTime = millis() + STOP_TIME;
+  stopReverseTime = stopStoppingTime + REVERSE_TIME;
+  stopTurnTime = stopReverseTime + TURN_TIME;
+}
+
+/*
+reverseAndTurn will reverse the mower and turn it.
+*/
+void reverseAndTurn()
+{
+  if (stopStoppingTime > millis())
+  {
+    printDebug("stopping…");
+    emergencyBrake = true;
+  }
+  else if (stopReverseTime > millis())
+  {
+    printDebug("reversing…");
+    setMotorsSpeed(-REVERSE_AND_TURN_SPEED, -REVERSE_AND_TURN_SPEED);
+  }
+  else if (stopTurnTime > millis())
+  {
+    printDebug("turning…");
+    if (shoudTurnLeft)
+      setMotorsSpeed(REVERSE_AND_TURN_SPEED, -REVERSE_AND_TURN_SPEED);
+    else
+      setMotorsSpeed(-REVERSE_AND_TURN_SPEED, REVERSE_AND_TURN_SPEED);
+  }
+  else
+  {
+    printDebug("stop reversing and turning");
+    doReverseAndTurn = false;
+  }
+}
 // ----------------------------------------------
 
 void setup()
@@ -395,89 +481,19 @@ void loop()
     flashLED(LED_PIN, 3000);
     printDebug("Battery below 20%, stopping all motors and activate LED.");
   }
-  else if (reverseAndTurn)
+  else if (doReverseAndTurn)
   {
-    if (stopStoppingTime > millis())
-    {
-      printDebug("stopping…");
-      emergencyBrake = true;
-    }
-    else if (stopReverseTime > millis())
-    {
-      printDebug("reversing…");
-      setMotorsSpeed(-REVERSE_AND_TURN_SPEED, -REVERSE_AND_TURN_SPEED);
-    }
-    else if (stopTurnTime > millis())
-    {
-      printDebug("turning…");
-      if (shoudTurnLeft)
-        setMotorsSpeed(REVERSE_AND_TURN_SPEED, -REVERSE_AND_TURN_SPEED);
-      else
-        setMotorsSpeed(-REVERSE_AND_TURN_SPEED, REVERSE_AND_TURN_SPEED);
-    }
-    else
-    {
-      printDebug("stop reversing and turning");
-      reverseAndTurn = false;
-    }
+    reverseAndTurn();
   }
   else if (bumperState || stopDistSonar || leftLineSensor.isAboveLine() || rightLineSensor.isAboveLine())
   {
-    printDebug("Bumper has touched, stop all motors and engaging reverse and turn");
-    reverseAndTurn = true;
-    if (sonarRightDist < SONAR_SIDE_DISTANCE_STOP)
-      shoudTurnLeft = false;
-    else
-      shoudTurnLeft = true;
-    stopStoppingTime = millis() + STOP_TIME;
-    stopReverseTime = stopStoppingTime + REVERSE_TIME;
-    stopTurnTime = stopReverseTime + TURN_TIME;
+    printDebug("Either the bumper has touched, the sonar is in critical zone or we are about to cross perimeter; stop all motors and preparing a reverse and turn");
+    prepareReverseAndTurn();
   }
-  // else if (stopDistSonar)
-  // {
-  //   printDebug("Obstacle in critical zone, engaging reverse and turn");
-  //   reverseAndTurn = true;
-  //   stopStoppingTime = millis() + STOP_TIME;
-  //   stopReverseTime = stopStoppingTime + REVERSE_TIME;
-  //   stopTurnTime = stopReverseTime + TURN_TIME;
-  // }
   // Obstacle near anywhere
   else if (slowDistSonar)
   {
-    float leftSpeed = 0;
-    float rightSpeed = 0;
-    if (sonarLeftDist < SONAR_SIDE_DISTANCE_SLOW)
-    {
-      if (sonarCenterDist < SONAR_CENTER_DISTANCE_SLOW) // Turn right
-      {
-        leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
-        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / HIGH_TURN_DIVISION;
-      }
-      else // Turn slightly less
-      {
-        leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
-        rightSpeed = OBSTACLE_AVOIDANCE_SPEED / LOW_TURN_DIVISION;
-      }
-    }
-    else if (sonarRightDist < SONAR_SIDE_DISTANCE_SLOW)
-    {
-      if (sonarCenterDist < SONAR_CENTER_DISTANCE_SLOW) // Turn left
-      {
-        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / HIGH_TURN_DIVISION;
-        rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
-      }
-      else // Turn slightly less
-      {
-        leftSpeed = OBSTACLE_AVOIDANCE_SPEED / LOW_TURN_DIVISION;
-        rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
-      }
-    }
-    else // Only on the center
-    {
-      leftSpeed = OBSTACLE_AVOIDANCE_SPEED;
-      rightSpeed = OBSTACLE_AVOIDANCE_SPEED;
-    }
-    setMotorsSpeed(leftSpeed, rightSpeed);
+    adaptSpeed();
   }
   else
   {
