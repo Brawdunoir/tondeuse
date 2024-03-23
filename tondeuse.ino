@@ -5,10 +5,10 @@
 #include "LineSensor.h"
 
 // Constants ------------------------------------
-const bool DEBUG = false;           // activate overall logs (could be overwhelming)
-const bool DEBUG_LOGS = false;      // activate printed logs for states (could be overwhelming)
-const bool DEBUG_BUMPER = false;    // activate bumper logs
-const bool DEBUG_SONAR = false;     // activate sonar logs
+const bool DEBUG = false;            // activate overall logs (could be overwhelming)
+const bool DEBUG_LOGS = false;       // activate printed logs for states (could be overwhelming)
+const bool DEBUG_BUMPER = false;     // activate bumper logs
+const bool DEBUG_SONAR = false;      // activate sonar logs
 const bool DEBUG_LINESENSOR = false; // activate line sensor logs (decorrelated from overall logs)
 // const bool DEBUG_BATTERY = false;     // activate battery logs
 const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
@@ -26,7 +26,7 @@ const float OBSTACLE_AVOIDANCE_SPEED = 300;  // motor speed when avoiding obstac
 const float HIGH_TURN_DIVISION = 10.0;       // Divise the motor speed of the other wheel by this value
 const float LOW_TURN_DIVISION = 2.0;         // Divise the motor speed of the other wheel by this value
 const float MOTOR_ACCELERATION = 800;        // +=-/1000 is hypothetic value given by ardumower project
-const float MOTOR_RATIO = 1.1;                 // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
+const float MOTOR_RATIO = 1.1;               // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
 // ----------------------------------------------
 
 // Pins -----------------------------------------
