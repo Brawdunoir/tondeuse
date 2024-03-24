@@ -12,22 +12,25 @@ const bool DEBUG_SONAR = false;      // activate sonar logs
 const bool DEBUG_LINESENSOR = false; // activate line sensor logs (decorrelated from overall logs)
 // const bool DEBUG_BATTERY = false;     // activate battery logs
 const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
+const bool DEBUG_LINE = false;        // activate line following logs
 const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
 const float STOP_TIME = 500;
-const float REVERSE_TIME = 2000;             // Time to have motors in reverse mode
-const float TURN_TIME = 1000;                // Time to have motor inversed to turn
-const float SONAR_TIMEOUT = 10000UL;         // 10ms to get approx 1.7m of range
-const float SONAR_SIDE_DISTANCE_SLOW = 30;   // sonar range, motor will slow down
-const float SONAR_CENTER_DISTANCE_SLOW = 50; // sonar range, motor will slow down
-const float SONAR_SIDE_DISTANCE_STOP = 10;   // sonar range, the mower will reverse and then turn
-const float SONAR_CENTER_DISTANCE_STOP = 21; // sonar range, the mower will reverse and then turn
-const float REVERSE_AND_TURN_SPEED = 400;    // motor speed when reversing and turning
-const float OBSTACLE_AVOIDANCE_SPEED = 300;  // motor speed when avoiding obstacle
-const float HIGH_TURN_DIVISION = 10.0;       // Divise the motor speed of the other wheel by this value
-const float LOW_TURN_DIVISION = 2.0;         // Divise the motor speed of the other wheel by this value
-const float MOTOR_ACCELERATION = 800;        // +=-/1000 is hypothetic value given by ardumower project
-const float MOTOR_RATIO = 1.1;               // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
-const float LINE_SENSOR_THRESHOLD = 200;     // Level below which there is no line
+const float REVERSE_TIME = 2000;                 // Time to have motors in reverse mode
+const float TURN_TIME = 1000;                    // Time to have motor inversed to turn
+const float SONAR_TIMEOUT = 10000UL;             // 10ms to get approx 1.7m of range
+const float SONAR_SIDE_DISTANCE_SLOW = 30;       // sonar range, motor will slow down
+const float SONAR_CENTER_DISTANCE_SLOW = 50;     // sonar range, motor will slow down
+const float SONAR_SIDE_DISTANCE_STOP = 10;       // sonar range, the mower will reverse and then turn
+const float SONAR_CENTER_DISTANCE_STOP = 21;     // sonar range, the mower will reverse and then turn
+const float REVERSE_AND_TURN_SPEED = 400;        // motor speed when reversing and turning
+const float OBSTACLE_AVOIDANCE_SPEED = 300;      // motor speed when avoiding obstacle
+const float HIGH_TURN_DIVISION = 10.0;           // Divise the motor speed of the other wheel by this value
+const float LOW_TURN_DIVISION = 2.0;             // Divise the motor speed of the other wheel by this value
+const float MOTOR_ACCELERATION = 800;            // +=-/1000 is hypothetic value given by ardumower project
+const float MOTOR_RATIO = 1.1;                   // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
+const bool IS_BASE_STATION_CLOCKWISE = true;     // Should the mower go clockwise or counter clockwise to go back to the base station
+const float LINE_SENSOR_THRESHOLD = 200;         // Level below which there is no line
+const float LINE_SENSOR_FOLLOW_LINE_VALUE = 250; // Level the mower will try to keep when following the line using the main sensor (depending on IS_BASE_STATION_CLOCKWISE, see getLineSensors function)
 // ----------------------------------------------
 
 // Pins -----------------------------------------
@@ -87,6 +90,8 @@ bool slowDistSonar = false;
 
 // Line
 bool lineState = false;
+float lastLevelFollowingLine = 0;
+int lastSignFollowingLine = 1; // 1 or -1
 // ----------------------------------------------
 
 // Next Time ------------------------------------
@@ -108,6 +113,9 @@ int senMotorFaultTurn = 0;               // Next motor we check for fault (circl
 // Behavior--------------------------------------
 bool doReverseAndTurn = false; // If true, the mower will engage a reverse and turn.
 bool shoudTurnLeft = false;
+bool doFindLine = false;
+bool doFollowLine = false;
+bool doNothing = false;
 // ----------------------------------------------
 
 // Helpers --------------------------------------
@@ -419,6 +427,88 @@ void reverseAndTurn()
     doReverseAndTurn = false;
   }
 }
+
+/*
+getLineSensors will return the line sensors in the right order depending on the base station direction.
+*/
+void getLineSensors(LineSensor &main, LineSensor &secondary)
+{
+  IS_BASE_STATION_CLOCKWISE ? (main = leftLineSensor, secondary = rightLineSensor) : (main = rightLineSensor, secondary = leftLineSensor);
+}
+
+/*
+findLine will make the mower go back to the perimeter.
+*/
+void findLine()
+{
+  setMotorsSpeed(MOTOR_MAX_SPEED * 0.75, MOTOR_MAX_SPEED * 0.75);
+  flashLED(LED_PIN, 500);
+  if (stopDistSonar || bumperState)
+  {
+    prepareReverseAndTurn();
+    return;
+  }
+
+  LineSensor goodLineSensor, badLineSensor;
+  getLineSensors(goodLineSensor, badLineSensor);
+
+  if (goodLineSensor.isAboveLine() && badLineSensor.getLevel() < goodLineSensor.getLevel())
+  {
+    doFindLine = false;
+    doFollowLine = true;
+  }
+  else if (badLineSensor.isAboveLine())
+  {
+    if (IS_BASE_STATION_CLOCKWISE)
+      setMotorsSpeed(MOTOR_MAX_SPEED / 2, -MOTOR_MAX_SPEED);
+    else
+      setMotorsSpeed(-MOTOR_MAX_SPEED, MOTOR_MAX_SPEED / 2);
+  }
+}
+
+/*
+followLine will make the mower follow the perimeter until it reaches the base station.
+*/
+void followLine()
+{
+  int maxSpeed = MOTOR_MAX_SPEED / 3;
+  // Stop everything, we have probably reached the base station
+  if (bumperState)
+    doNothing = true;
+
+  // No line sensor is above the line, we have lost the line. Let's find it again.
+  bool lostLine = !leftLineSensor.isAboveLine() && !rightLineSensor.isAboveLine();
+  if (lostLine)
+  {
+    doFollowLine = false;
+    doFindLine = true;
+  }
+
+  LineSensor goodLineSensor, badLineSensor;
+  getLineSensors(goodLineSensor, badLineSensor);
+
+  if (goodLineSensor.isAboveLine())
+  {
+    if (goodLineSensor.getLevel() > LINE_SENSOR_FOLLOW_LINE_VALUE)
+    {
+      setMotorsSpeed(maxSpeed, maxSpeed);
+    }
+    // It is worst than the last time, we are going away from the line
+    else if (goodLineSensor.getLevel() < lastLevelFollowingLine)
+    {
+      lastSignFollowingLine = -lastSignFollowingLine;
+      setMotorsSpeed(maxSpeed / 2 * -lastSignFollowingLine, maxSpeed * lastSignFollowingLine);
+    }
+  }
+  else if (badLineSensor.isAboveLine())
+  {
+    if (IS_BASE_STATION_CLOCKWISE)
+      setMotorsSpeed(maxSpeed / 2, -maxSpeed);
+    else
+      setMotorsSpeed(-maxSpeed, maxSpeed / 2);
+  }
+  lastLevelFollowingLine = goodLineSensor.getLevel();
+}
 // ----------------------------------------------
 
 void setup()
@@ -470,30 +560,41 @@ void loop()
   checkLineSensor();
   adjustMotorsSpeed();
 
-  if (DEBUG)
+  bool motorFault = motorRightFault || motorLeftFault;
+  bool batteryLow = battery.getLevel() < 20;
+  bool shouldReverseAndTurn = bumperState || stopDistSonar || lineState;
+
+  if (doNothing || DEBUG)
   {
     flashLED(LED_PIN, 10000);
   }
 
-  if (motorLeftFault || motorRightFault)
+  if (motorFault)
   {
     setMotorsSpeed(0, 0);
     digitalWrite(MOW_MOTOR_PIN, HIGH);
     flashLED(LED_PIN, 1000);
     printDebug("One of the motor has a fault!!!");
   }
-  else if (battery.getLevel() < 20)
+  else if (doFollowLine)
   {
-    setMotorsSpeed(0, 0);
+    followLine();
+  }
+  else if (!doFindLine && (batteryLow || DEBUG_LINE))
+  {
+    printDebug("Battery below 20%, stopping mowing motors and going to find the perimeter.");
     digitalWrite(MOW_MOTOR_PIN, HIGH);
-    flashLED(LED_PIN, 3000);
-    printDebug("Battery below 20%, stopping all motors and activate LED.");
+    doFindLine = true;
   }
   else if (doReverseAndTurn)
   {
     reverseAndTurn();
   }
-  else if (bumperState || stopDistSonar || lineState)
+  else if (doFindLine)
+  {
+    findLine();
+  }
+  else if (shouldReverseAndTurn)
   {
     printDebug("Either the bumper has touched, the sonar is in critical zone or we are about to cross perimeter; stop all motors and preparing a reverse and turn");
     prepareReverseAndTurn();
