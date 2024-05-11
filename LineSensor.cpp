@@ -7,6 +7,8 @@ LineSensor::LineSensor(int pin, float threshold, bool debug)
   pinMode(pin, INPUT);
 }
 
+LineSensor::LineSensor() {}
+
 bool LineSensor::isAboveLine()
 {
   return aboveLine;

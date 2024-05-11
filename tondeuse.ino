@@ -10,16 +10,16 @@ const bool DEBUG_LOGS = false;       // activate printed logs for states (could 
 const bool DEBUG_BUMPER = false;     // activate bumper logs
 const bool DEBUG_SONAR = false;      // activate sonar logs
 const bool DEBUG_LINESENSOR = false; // activate line sensor logs (decorrelated from overall logs)
-// const bool DEBUG_BATTERY = false;     // activate battery logs
-const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus not included in normal DEBUG
-const bool DEBUG_LINE = false;        // activate line following logs
+const bool DEBUG_BATTERY = false;     // activate battery logs
+const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus  not included in normal DEBUG
+const bool DEBUG_LINE = false;         // activate line following logs
 const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
-const float STOP_TIME = 500;
+const float STOP_TIME = 200;
 const float REVERSE_TIME = 2000;                 // Time to have motors in reverse mode
 const float TURN_TIME = 1000;                    // Time to have motor inversed to turn
 const float SONAR_TIMEOUT = 10000UL;             // 10ms to get approx 1.7m of range
 const float SONAR_SIDE_DISTANCE_SLOW = 30;       // sonar range, motor will slow down
-const float SONAR_CENTER_DISTANCE_SLOW = 50;     // sonar range, motor will slow down
+const float SONAR_CENTER_DISTANCE_SLOW = 40;     // sonar range, motor will slow down
 const float SONAR_SIDE_DISTANCE_STOP = 10;       // sonar range, the mower will reverse and then turn
 const float SONAR_CENTER_DISTANCE_STOP = 21;     // sonar range, the mower will reverse and then turn
 const float REVERSE_AND_TURN_SPEED = 400;        // motor speed when reversing and turning
@@ -27,9 +27,9 @@ const float OBSTACLE_AVOIDANCE_SPEED = 300;      // motor speed when avoiding ob
 const float HIGH_TURN_DIVISION = 10.0;           // Divise the motor speed of the other wheel by this value
 const float LOW_TURN_DIVISION = 2.0;             // Divise the motor speed of the other wheel by this value
 const float MOTOR_ACCELERATION = 800;            // +=-/1000 is hypothetic value given by ardumower project
-const float MOTOR_RATIO = 1.1;                   // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
-const bool IS_BASE_STATION_CLOCKWISE = true;     // Should the mower go clockwise or counter clockwise to go back to the base station
-const float LINE_SENSOR_THRESHOLD = 200;         // Level below which there is no line
+const float MOTOR_RATIO = 1.3;                   // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
+const bool IS_BASE_STATION_CLOCKWISE = false;    // Should the mower go clockwise or counter clockwise to go back to the base station
+const float LINE_SENSOR_THRESHOLD = 150;         // Level below which there is no line
 const float LINE_SENSOR_FOLLOW_LINE_VALUE = 250; // Level the mower will try to keep when following the line using the main sensor (depending on IS_BASE_STATION_CLOCKWISE, see getLineSensors function)
 // ----------------------------------------------
 
@@ -566,6 +566,7 @@ void loop()
 
   if (doNothing || DEBUG)
   {
+    setMotorsSpeed(0, 0);
     flashLED(LED_PIN, 10000);
   }
 

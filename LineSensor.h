@@ -5,6 +5,7 @@ class LineSensor
 {
 public:
   LineSensor(int pin, float threshold, bool debug);
+  LineSensor();
   bool isAboveLine();
   void update();
   float getLevel();
