@@ -5,14 +5,14 @@
 #include "LineSensor.h"
 
 // Constants ------------------------------------
-const bool DEBUG = false;            // activate overall logs (could be overwhelming)
-const bool DEBUG_LOGS = false;       // activate printed logs for states (could be overwhelming)
-const bool DEBUG_BUMPER = false;     // activate bumper logs
-const bool DEBUG_SONAR = false;      // activate sonar logs
-const bool DEBUG_LINESENSOR = false; // activate line sensor logs (decorrelated from overall logs)
+const bool DEBUG = false;             // activate overall logs (could be overwhelming)
+const bool DEBUG_LOGS = false;        // activate printed logs for states (could be overwhelming)
+const bool DEBUG_BUMPER = false;      // activate bumper logs
+const bool DEBUG_SONAR = false;       // activate sonar logs
+const bool DEBUG_LINESENSOR = false;  // activate line sensor logs (decorrelated from overall logs)
 const bool DEBUG_BATTERY = false;     // activate battery logs
 const bool DEBUG_MOTOR_SPEED = false; // activate motor speeds logs ; these logs are really verbose and thus  not included in normal DEBUG
-const bool DEBUG_LINE = false;         // activate line following logs
+const bool DEBUG_LINE = false;        // activate line following logs
 const float MOTOR_MAX_SPEED = 400;    // motor max speed, given by DualVNH5019MotorShield library
 const float STOP_TIME = 200;
 const float REVERSE_TIME = 2000;                 // Time to have motors in reverse mode
@@ -27,7 +27,7 @@ const float OBSTACLE_AVOIDANCE_SPEED = 300;      // motor speed when avoiding ob
 const float HIGH_TURN_DIVISION = 10.0;           // Divise the motor speed of the other wheel by this value
 const float LOW_TURN_DIVISION = 2.0;             // Divise the motor speed of the other wheel by this value
 const float MOTOR_ACCELERATION = 800;            // +=-/1000 is hypothetic value given by ardumower project
-const float MOTOR_RATIO = 1;                   // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
+const float MOTOR_RATIO = 1;                     // Ratio between left and right motor speed, 1 = same speed, 0.5 = right motor speed is half of left motor speed, 2 = right motor speed is twice left motor speed
 const bool IS_BASE_STATION_CLOCKWISE = false;    // Should the mower go clockwise or counter clockwise to go back to the base station
 const float LINE_SENSOR_THRESHOLD = 150;         // Level below which there is no line
 const float LINE_SENSOR_FOLLOW_LINE_VALUE = 250; // Level the mower will try to keep when following the line using the main sensor (depending on IS_BASE_STATION_CLOCKWISE, see getLineSensors function)
@@ -583,7 +583,7 @@ void loop()
   {
     printDebug("Battery below 20%, stopping mowing motors and going to find the perimeter.");
     digitalWrite(MOW_MOTOR_PIN, HIGH);
-    doFindLine = true;
+    doNothing = true;
   }
   else if (doReverseAndTurn)
   {
