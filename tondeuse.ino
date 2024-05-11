@@ -244,7 +244,7 @@ void checkBumper()
   {
     nextTimeBumper = millis() + 100;
 
-    bumperState = digitalRead(BUMPER_PIN) == 1;
+    bumperState = digitalRead(BUMPER_PIN) == LOW;
 
     if (DEBUG || DEBUG_BUMPER)
     {
