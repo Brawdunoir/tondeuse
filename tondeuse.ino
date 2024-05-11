@@ -91,7 +91,7 @@ bool slowDistSonar = false;
 // Line
 bool lineState = false;
 float lastLevelFollowingLine = 0;
-int lastSignFollowingLine = 1; // 1 or -1
+int lastFollowingLine = true; // 1 or -1
 // ----------------------------------------------
 
 // Next Time ------------------------------------
@@ -449,20 +449,14 @@ void findLine()
     return;
   }
 
-  LineSensor goodLineSensor, badLineSensor;
-  getLineSensors(goodLineSensor, badLineSensor);
+  // LineSensor goodLineSensor, badLineSensor;
+  // getLineSensors(goodLineSensor, badLineSensor);
 
-  if (goodLineSensor.isAboveLine() && badLineSensor.getLevel() < goodLineSensor.getLevel())
+  if (lineState)
   {
+    emergencyBrake = true;
     doFindLine = false;
     doFollowLine = true;
-  }
-  else if (badLineSensor.isAboveLine())
-  {
-    if (IS_BASE_STATION_CLOCKWISE)
-      setMotorsSpeed(MOTOR_MAX_SPEED / 2, -MOTOR_MAX_SPEED);
-    else
-      setMotorsSpeed(-MOTOR_MAX_SPEED, MOTOR_MAX_SPEED / 2);
   }
 }
 
@@ -471,7 +465,8 @@ followLine will make the mower follow the perimeter until it reaches the base st
 */
 void followLine()
 {
-  int maxSpeed = MOTOR_MAX_SPEED / 3;
+  int maxSpeed = MOTOR_MAX_SPEED * 0.75;
+  flashLED(LED_PIN, 100);
   // Stop everything, we have probably reached the base station
   if (bumperState)
     doNothing = true;
@@ -484,30 +479,33 @@ void followLine()
     doFindLine = true;
   }
 
-  LineSensor goodLineSensor, badLineSensor;
-  getLineSensors(goodLineSensor, badLineSensor);
+  // LineSensor goodLineSensor, badLineSensor;
+  // getLineSensors(goodLineSensor, badLineSensor);
 
-  if (goodLineSensor.isAboveLine())
+  if (rightLineSensor.isAboveLine())
   {
-    if (goodLineSensor.getLevel() > LINE_SENSOR_FOLLOW_LINE_VALUE)
+    if (rightLineSensor.getLevel() > LINE_SENSOR_FOLLOW_LINE_VALUE)
     {
       setMotorsSpeed(maxSpeed, maxSpeed);
     }
     // It is worst than the last time, we are going away from the line
-    else if (goodLineSensor.getLevel() < lastLevelFollowingLine)
+    else if (rightLineSensor.getLevel() < lastLevelFollowingLine)
     {
-      lastSignFollowingLine = -lastSignFollowingLine;
-      setMotorsSpeed(maxSpeed / 2 * -lastSignFollowingLine, maxSpeed * lastSignFollowingLine);
+      lastFollowingLine = !lastFollowingLine;
+      if (lastFollowingLine)
+        setMotorsSpeed(maxSpeed, 0);
+      else
+        setMotorsSpeed(0, maxSpeed);
     }
   }
-  else if (badLineSensor.isAboveLine())
+  else if (leftLineSensor.isAboveLine())
   {
     if (IS_BASE_STATION_CLOCKWISE)
-      setMotorsSpeed(maxSpeed / 2, -maxSpeed);
+      setMotorsSpeed(maxSpeed, 0);
     else
-      setMotorsSpeed(-maxSpeed, maxSpeed / 2);
+      setMotorsSpeed(0, maxSpeed);
   }
-  lastLevelFollowingLine = goodLineSensor.getLevel();
+  lastLevelFollowingLine = rightLineSensor.getLevel();
 }
 // ----------------------------------------------
 
